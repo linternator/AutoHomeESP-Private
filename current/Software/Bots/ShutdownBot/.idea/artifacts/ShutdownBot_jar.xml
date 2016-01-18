@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ShutdownBot:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ShutdownBot_jar</output-path>
+    <root id="archive" name="ShutdownBot.jar">
+      <element id="module-output" name="ShutdownBot" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/mqtt.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
