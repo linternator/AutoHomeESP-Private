@@ -51,6 +51,16 @@ void setup() {
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
   autohome.begin(wifi_ssid, wifi_password, mqtt_broker_ip, mqtt_user, mqtt_password, host_name, mqtt_topic);
 
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
+
+  pinMode(ENABLE, OUTPUT);
+  digitalWrite(ENABLE, HIGH);
+
+  pinMode(SCL_PIN, OUTPUT);
+  pinMode(SDO_PIN, INPUT);
+
 }
 
 void loop() {
