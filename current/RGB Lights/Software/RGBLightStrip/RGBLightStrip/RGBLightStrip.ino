@@ -61,6 +61,8 @@ void setup() {
   pinMode(SCL_PIN, OUTPUT);
   pinMode(SDO_PIN, INPUT);
 
+  analogWriteRange(255);
+
 }
 
 void loop() {
@@ -274,38 +276,60 @@ void processKeypad() {
           SETRGB(currR, (currG - 8), currB);
 
         }
-
         break;
-
       }
 
     case 3: {
 
         if (currB <= 247) {
-
           SETRGB(currR , currG, (currB + 8));
-
         }
-
         break;
-
       }
 
     case 7:
       {
         if (currB >= 8) {
-
           SETRGB(currR , currG, (currB - 8));
-
         }
-
         break;
-
       }
+
+
+    case 4:
+      {
+        autohome.sendPacket("RGB:BUTTON:4");
+      } break;
+
+    case 8:
+      {
+        autohome.sendPacket("RGB:BUTTON:8");
+      } break;
+      
+    case 9:
+      {
+        autohome.sendPacket("RGB:BUTTON:9");
+      } break;
+
+    case 10:
+      {
+        autohome.sendPacket("RGB:BUTTON:10");
+      } break;
+      
+    case 11:
+      {
+        autohome.sendPacket("RGB:BUTTON:11");
+      } break;
+
+    case 12:
+      {
+        autohome.sendPacket("RGB:BUTTON:12");
+      } break;
+            
 
     case 13: {
 
-        SETRGB(255, 255, 0);
+        SETRGB(0, 0, 0);
 
         break;
 
@@ -319,6 +343,14 @@ void processKeypad() {
 
       }
 
+        case 15: {
+
+        SETRGB(255 , 180, 80);
+
+        break;
+
+      }
+
     case 16: {
 
         SETRGB(255 , 255, 255);
@@ -327,13 +359,7 @@ void processKeypad() {
 
       }
 
-    case 15: {
-
-        SETRGB(0 , 0, 0);
-
-        break;
-
-      }
+  
 
   }
 
