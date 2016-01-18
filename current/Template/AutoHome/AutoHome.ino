@@ -5,7 +5,7 @@
 /* Use pubclient.subscribe(<Topic>); */
 void mqtt_subscribe(){
 
-  
+  pubclient.publish("/test", "Hello World");
   
 }
 
