@@ -1,13 +1,13 @@
 ## Protocol :
 
-* Set Var :
-"Device Type":"Mode":"Value","Value" .....
+1. Set Var :
+  * "Device Type":"Mode":"Value","Value" .....
 
-* Interupts :
-"Device Type":"Interupt type":"value"
+2. Interupts :
+  * "Device Type":"Interupt type":"value"
 
-*Interupt types:
--Button
--Ready (Ready Flag)
--IS (Responce to command)
+  * Interupt types:
+    * BUTTON
+    * READY (Ready Flag)
+    * IS (Responce to command)
 
