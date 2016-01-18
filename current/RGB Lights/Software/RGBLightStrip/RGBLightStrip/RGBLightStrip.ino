@@ -32,6 +32,8 @@ unsigned long previousMillisKeypad = 0;
 unsigned long previousMillisFade = 0;
 int fadeTime = 0;
 
+int lastButton = 0;
+
 boolean fade = false;
 boolean buttonPress = false;
 
@@ -237,6 +239,8 @@ void processKeypad() {
 
         }
 
+        lastButton = 1;
+
         break;
 
       }
@@ -253,6 +257,8 @@ void processKeypad() {
 
         }
 
+        lastButton = 5;
+
         break;
 
       }
@@ -265,6 +271,8 @@ void processKeypad() {
 
         }
 
+        lastButton = 2;
+
         break;
 
       }
@@ -276,60 +284,133 @@ void processKeypad() {
           SETRGB(currR, (currG - 8), currB);
 
         }
+
+        lastButton = 6;
+        
         break;
+        
       }
 
     case 3: {
 
         if (currB <= 247) {
+
           SETRGB(currR , currG, (currB + 8));
+          
         }
+
+        lastButton = 3;
+        
         break;
+        
       }
 
     case 7:
       {
+        
         if (currB >= 8) {
+          
           SETRGB(currR , currG, (currB - 8));
+          
         }
+
+        lastButton = 7;
+        
         break;
+        
       }
 
 
-    case 4:
-      {
-        autohome.sendPacket("RGB:BUTTON:4");
-      } break;
+    case 4: {
+        
+        if(lastButton != 4){
+        
+          autohome.sendPacket("RGB:BUTTON:4");
 
-    case 8:
-      {
-        autohome.sendPacket("RGB:BUTTON:8");
-      } break;
+        }
+
+        lastButton = 4;
+
+        break;
+        
+      } 
+
+    case 8: {
+        
+        if(lastButton != 8){
+        
+          autohome.sendPacket("RGB:BUTTON:8");
+
+        }
+
+        lastButton = 8;
+
+        break;
+        
+      } 
       
-    case 9:
-      {
-        autohome.sendPacket("RGB:BUTTON:9");
-      } break;
+    case 9:{
+        
+        if(lastButton != 9){
+        
+          autohome.sendPacket("RGB:BUTTON:9");
 
-    case 10:
-      {
-        autohome.sendPacket("RGB:BUTTON:10");
-      } break;
+        }
+
+        lastButton = 9;
+
+        break;
+        
+      } 
+
+    case 10:{
+        
+        if(lastButton != 10){
+        
+          autohome.sendPacket("RGB:BUTTON:10");
+
+        }
+
+        lastButton = 10;
+
+        break;
+        
+      } 
       
-    case 11:
-      {
-        autohome.sendPacket("RGB:BUTTON:11");
-      } break;
+    case 11:{
+        
+        if(lastButton != 11){
+        
+          autohome.sendPacket("RGB:BUTTON:11");
 
-    case 12:
-      {
-        autohome.sendPacket("RGB:BUTTON:12");
-      } break;
+        }
+
+        lastButton = 11;
+
+        break;
+        
+      } 
+
+    case 12:{
+        
+        if(lastButton != 12){
+        
+          autohome.sendPacket("RGB:BUTTON:12");
+
+        }
+
+        lastButton = 12;
+
+        break;
+        
+      } 
             
 
     case 13: {
 
         SETRGB(0, 0, 0);
+
+        lastButton = 13;
 
         break;
 
@@ -339,13 +420,17 @@ void processKeypad() {
 
         SETRGB(50, 50, 254);
 
+        lastButton = 14;
+
         break;
 
       }
 
-        case 15: {
+    case 15: {
 
         SETRGB(255 , 180, 80);
+
+        lastButton = 15;
 
         break;
 
@@ -354,6 +439,8 @@ void processKeypad() {
     case 16: {
 
         SETRGB(255 , 255, 255);
+
+        lastButton = 16;
 
         break;
 
