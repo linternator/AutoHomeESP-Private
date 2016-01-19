@@ -1,14 +1,9 @@
 ## Device Protocols
 
 1. RGB Lights
-  * Receive :
+  * Received :
     * RGB:STATIC:R,G,B
     * RGB:DYNAMIC:R,G,B,TIME
-  * Send :
+  * Sent :
     * RGB:IS:R,G,B
     * RGB:BUTTON:1
-
-1. Doorbell
-  * Send :
-    * Doorbell:Button:0
-
