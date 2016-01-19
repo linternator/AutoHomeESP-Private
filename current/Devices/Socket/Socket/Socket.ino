@@ -146,7 +146,7 @@ void loop() {
     if (buttonState1 == HIGH) {
 
       autohome.sendPacket( "SOCKET:BUTTON1" );
-      digitalWrite(RELAY, HIGH);
+      digitalWrite(RELAY, !digitalRead(RELAY));
       digitalWrite(LED_PIN, digitalRead(RELAY));
 
     }
@@ -162,9 +162,9 @@ void loop() {
     // if the state has changed, increment the counter
     if (buttonState2 == HIGH) {
 
-      autohome.sendPacket( "SOCKET:BUTTON2" );
-      digitalWrite(RELAY, LOW);
-      digitalWrite(LED_PIN, digitalRead(RELAY));
+      String packet = "SOCKET:IS:" + String(digitalRead(RELAY));       
+
+      autohome.sendPacket( packet.c_str() );
 
     }
 
