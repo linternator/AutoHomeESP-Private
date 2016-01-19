@@ -99,6 +99,14 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 void setup() {
   // put your setup code here, to run once:
 
+  
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(RELAY,OUTPUT);
+  digitalWrite(RELAY, LOW);
+  pinMode(BUTTON1, INPUT_PULLUP);
+  pinMode(BUTTON2, INPUT_PULLUP);
+
+
   Serial.begin(115200);
 
   /* This registers the function that gets called when a packet is recieved. */
@@ -106,6 +114,8 @@ void setup() {
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
   autohome.begin(wifi_ssid, wifi_password, mqtt_broker_ip, mqtt_user, mqtt_password, host_name, mqtt_topic);
+
+
 
 }
 
