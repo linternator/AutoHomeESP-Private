@@ -1,0 +1,10 @@
+[Unit]
+Description=mqtt remote shutdown
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/shutdownsMQTT.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
