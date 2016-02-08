@@ -8,9 +8,9 @@
 
 /* These variables need to be filled out with the information for your wifi details */
 /* and the mqtt broker */
-char const* wifi_ssid = "RG-Wifi";
-char const* wifi_password = "STBCrg123";
-char const* mqtt_broker_ip = "192.168.1.10";
+char const* wifi_ssid = "SoMakeIt";
+char const* wifi_password = "JeanLucPicard";
+char const* mqtt_broker_ip = "82.13.163.212";
 char const* mqtt_user = "autohome";
 char const* mqtt_password = "autoHOME";
 char const* host_name = "DoorBell";

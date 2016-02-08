@@ -4,11 +4,11 @@
 /* and the mqtt broker */
 char const* wifi_ssid = "RG-Wifi";
 char const* wifi_password = "STBCrg123";
-char const* mqtt_broker_ip = "192.168.1.10";
+char const* mqtt_broker_ip = "82.13.163.212";
 char const* mqtt_user = "autohome";
 char const* mqtt_password = "autoHOME";
-char const* host_name = "Socket";
-char const* mqtt_topic = "/home/bedroom/sockets/1";
+char const* host_name = "David-Socket";
+char const* mqtt_topic = "/home/David/Socket";
 
 AutoHome autohome;
 
