@@ -1,0 +1,22 @@
+ota updates 
+
+
+flash the esp with esptool.py
+
+use "python esptool.py erase_flash" 
+or  "python esptool.py -p /dev/usb -b 112500 erase_flash"
+
+
+set flash size to "1M (256K SPIFFS)
+upload onece with serial, 
+
+for OTA use same settings.
+
+
+
+
+
+
+
+
+
