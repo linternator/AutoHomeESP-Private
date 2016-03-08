@@ -4,9 +4,9 @@ AutoHome autohome;
 
 /* These variables need to be filled out with the information for your wifi details */
 /* and the mqtt broker */
-char const* wifi_ssid = "SoMakeIt"; // "RG-Wifi";
-char const* wifi_password = "JeanLucPicard"; // "STBCrg123";
-char const* mqtt_broker_ip =  "http://82.13.163.212"; // "192.168.1.10";
+char const* wifi_ssid = "RG-Wifi"; // "RG-Wifi";
+char const* wifi_password = "STBCrg123"; // "STBCrg123";
+char const* mqtt_broker_ip =  "192.168.1.10"; // "192.168.1.10";
 char const* mqtt_user = "autohome";
 char const* mqtt_password = "autoHOME";
 char const* host_name = "keypad";
