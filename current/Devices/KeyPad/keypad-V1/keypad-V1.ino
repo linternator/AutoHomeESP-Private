@@ -13,11 +13,11 @@ char const* host_name = "keypad";
 char const* mqtt_topic = "/home/bedroom/keypad";
 
 
-#define SCL_PIN 12
-#define SDO_PIN 13
+#define SCL_PIN 4
+#define SDO_PIN 5
 
 unsigned long previousMillisKeypad = 0;
-unsigned long previousMillisFade = 0;
+// unsigned long previousMillisFade = 0;
 int fadeTime = 0;
 
 int lastButton = 0;
@@ -53,13 +53,13 @@ void loop() {
   /* This needs to be called in the loop as it handels the reconection to the mqtt server if it disconnects*/
   autohome.loop();
 
- // unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();
 
 //  process_fade(currentMillis);
 
-//  if (currentMillis - previousMillisKeypad >= 150) {
+  if (currentMillis - previousMillisKeypad >= 150) {
 
- //   previousMillisKeypad = currentMillis;
+    previousMillisKeypad = currentMillis;
 
     if (Read_Keypad() == 0 ) {
 
@@ -85,7 +85,7 @@ void loop() {
 
     }
 
-  // }
+   }
 
 }
 
@@ -145,211 +145,16 @@ byte Read_Keypad(void)
 }
 
 void processKeypad() {
-
+// delay(10);
+int key = Read_Keypad();
      
       //  lastButton = Read_Keypad() 
-        if(lastButton != Read_Keypad()){
-          autohome.sendPacket("Bedroom:"+Read_Keypad());
+        if(lastButton != key){
+
+          String packet = "Bedroom:" + String(key);
+          autohome.sendPacket( packet.c_str() );
+
+          autohome.sendPacket("Bedroom:"+key);
         }
-        lastButton = Read_Keypad();
+        lastButton = key;
       }   
-      
-
-
-
- /* switch ( Read_Keypad() ) {
-
-//    case 0:
-//    {
-//      if(lastButton != 0)
-//      {
-//          String packet = "RGB:IS:" + String(currR) + "," + String(currG) + "," + String(currB);
-//          autohome.sendPacket( packet.c_str() );
-//                    lastButton = 0;
-//      }
-//        else  
-//          {lastButton = 0;}
-//        break;
-//    }
-
-    case 1: {
-
-{
-        if(lastButton != 1){
-          autohome.sendPacket("RGB:BUTTON:1");
-        }
-        lastButton = 1;
-        break;
-      }
-      }
-
-    case 5: {
-        lastButton = 5;
-{
-        if(lastButton != 5){
-          autohome.sendPacket("RGB:BUTTON:5");
-        }
-        lastButton = 5;
-        break;        
-      } 
-      }
-
-    case 2: {       
-        lastButton = 2;		
-{       
-        if(lastButton != 2){       
-          autohome.sendPacket("RGB:BUTTON:2");
-        }
-        lastButton = 2;
-        break;        
-      } 
-      }
-
-    case 6: {      
-        lastButton = 6;	
-	{      
-        if(lastButton != 6){       
-          autohome.sendPacket("RGB:BUTTON:6");
-        }
-        lastButton = 6;
-        break;    
-      }      
-      }
-
-    case 3: {
-        lastButton = 3;
-      {
-        if(lastButton != 3){
-          autohome.sendPacket("RGB:BUTTON:3");
-        }
-        lastButton = 3;
-        break;
-      } 
-      }
-
-    case 7:
-      {
-        lastButton = 7 {
-        if(lastButton != 7){
-          autohome.sendPacket("RGB:BUTTON:7");
-        }
-        lastButton = 7;
-        break;
-      }   
-      }
-
-
-    case 4: {
-      {
-        lastButton = 4 {
-        if(lastButton != 4){
-          autohome.sendPacket("RGB:BUTTON:4");
-        }
-        lastButton = 4;
-        break;
-      }   
-      }
-
-    case 8: {
-      {
-        lastButton = 8 {
-        if(lastButton != 8){
-          autohome.sendPacket("RGB:BUTTON:8");
-        }
-        lastButton = 8;
-        break;
-      }   
-      }
-      
-    case 9:{
-      {
-        lastButton = 9 {
-        if(lastButton != 9){
-          autohome.sendPacket("RGB:BUTTON:9");
-        }
-        lastButton = 9;
-        break;
-      }   
-      }
-
-    case 10:{
-      {
-        lastButton = 10 {
-        if(lastButton != 10){
-          autohome.sendPacket("RGB:BUTTON:10");
-        }
-        lastButton = 10;
-        break;
-      }   
-      } 
-      
-    case 11:{
-      {
-        lastButton = 11 {
-        if(lastButton != 11){
-          autohome.sendPacket("RGB:BUTTON:11");
-        }
-        lastButton = 11;
-        break;
-      }   
-      }
-
-    case 12:{
-      {
-        lastButton = 12 {
-        if(lastButton != 12){
-          autohome.sendPacket("RGB:BUTTON:12");
-        }
-        lastButton = 12;
-        break;
-      }   
-      }
-            
-
-    case 13: {
-
-        lastButton = 13;
-
-          String packet = "RGB:IS:" + String(currR) + "," + String(currG) + "," + String(currB);
-    autohome.sendPacket( packet.c_str() );
-
-        break;
-
-      }
-
-    case 14: {
-
-
-
-        break;
-
-      }
-
-    case 15: {
-
-        lastButton = 15;
-
-          String packet = "RGB:IS:" + String(currR) + "," + String(currG) + "," + String(currB);
-    autohome.sendPacket( packet.c_str() );
-
-        break;
-
-      }
-
-    case 16: {
-
-        SETRGB(255 , 255, 255);
-
-        lastButton = 16;
-
-          String packet = "RGB:IS:" + String(currR) + "," + String(currG) + "," + String(currB);
-    autohome.sendPacket( packet.c_str() );
-
-        break;
-
-      }
-
-  
-
-*/  
-
