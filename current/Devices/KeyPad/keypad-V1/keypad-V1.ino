@@ -12,7 +12,6 @@ char const* mqtt_password = "autoHOME";
 char const* host_name = "keypad";
 char const* mqtt_topic = "/home/bedroom/keypad";
 
-
 #define SCL_PIN 4
 #define SDO_PIN 5
 
@@ -32,7 +31,7 @@ void processKeypad();
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 
 void setup() {
-  
+
   Serial.begin(115200);
 
   /* This registers the function that gets called when a packet is recieved. */
@@ -49,7 +48,7 @@ void setup() {
 }
 
 void loop() {
- 
+
   /* This needs to be called in the loop as it handels the reconection to the mqtt server if it disconnects*/
   autohome.loop();
 
@@ -72,7 +71,7 @@ void loop() {
 //          autohome.sendPacket( packet.c_str() );
                     lastButton = 0;
       }
-        else  
+        else
           {lastButton = 0;}
 
       }
@@ -147,8 +146,8 @@ byte Read_Keypad(void)
 void processKeypad() {
 // delay(10);
 int key = Read_Keypad();
-     
-      //  lastButton = Read_Keypad() 
+
+      //  lastButton = Read_Keypad()
         if(lastButton != key){
 
           String packet = "Bedroom:" + String(key);
@@ -157,4 +156,4 @@ int key = Read_Keypad();
           autohome.sendPacket("Bedroom:"+key);
         }
         lastButton = key;
-      }   
+      }
