@@ -1,4 +1,4 @@
-update=Mon 08 Feb 2016 02:05:03 GMT
+update=Thu 17 Mar 2016 13:14:18 GMT
 version=1
 last_client=kicad
 [pcbnew]
@@ -23,9 +23,11 @@ ModuleOutlineThickness=0.150000000000
 [cvpcb]
 version=1
 NetIExt=net
+[general]
+version=1
 [eeschema]
 version=1
-LibDir=
+LibDir=../../../../../../../Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/ESP8266.pretty;../../../../../../../Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/ESP8266.3dshapes;ESP8266.pretty
 [eeschema/libraries]
 LibName1=power
 LibName2=device
@@ -56,5 +58,5 @@ LibName26=opto
 LibName27=atmel
 LibName28=contrib
 LibName29=valves
-[general]
-version=1
+LibName30=esp8266-12
+LibName31=/home/richard/Documents/Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/esp8266-12
