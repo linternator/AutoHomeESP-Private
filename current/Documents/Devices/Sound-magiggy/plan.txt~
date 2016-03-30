@@ -1,0 +1,7 @@
+msgeq7
+
+useing a MSGEQ7 to read the spectra of a aldio line.
+useing that infomation, to calculate a beat, and maybe more,
+
+the bean and othere things is to be transmitted by MQTT.
+hopefully fast enought to be usefull to say my lights, or othre things.
