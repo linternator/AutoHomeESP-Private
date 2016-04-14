@@ -1,4 +1,4 @@
-update=Thu 17 Mar 2016 13:14:18 GMT
+update=Thu 07 Apr 2016 12:55:03 BST
 version=1
 last_client=kicad
 [pcbnew]
@@ -27,7 +27,7 @@ NetIExt=net
 version=1
 [eeschema]
 version=1
-LibDir=../../../../../../../Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/ESP8266.pretty;../../../../../../../Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/ESP8266.3dshapes;ESP8266.pretty
+LibDir=../../../../../../../Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/ESP8266.pretty;../../../../../../../Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/ESP8266.3dshapes;ESP8266.pretty;ESP8266.pretty
 [eeschema/libraries]
 LibName1=power
 LibName2=device
@@ -60,3 +60,4 @@ LibName28=contrib
 LibName29=valves
 LibName30=esp8266-12
 LibName31=/home/richard/Documents/Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/esp8266-12
+LibName32=/home/richard/Documents/Kicad folders/kicad-ESP8266-master/kicad-ESP8266-master/ESP8266
