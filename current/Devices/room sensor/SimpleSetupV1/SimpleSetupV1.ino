@@ -9,8 +9,6 @@
 
 /* These variables need to be filled out with the information for your wifi details */
 /* and the mqtt broker */
-char const* wifi_ssid = "RG-Wifi";
-char const* wifi_password = "STBCrg123";
 char const* mqtt_broker_ip = "192.168.1.10";
 char const* mqtt_user = "autohome";
 char const* mqtt_password = "autoHOME";
@@ -18,7 +16,7 @@ char const* host_name = "Room-sensor";
 char const* mqtt_topic = "/Home/Bedroom/Sensor";
 
 unsigned long previousemillis = 0;
-int Time = 500;
+int Time = 20;
 
 AutoHome autohome;
 
@@ -61,11 +59,12 @@ void setup() {
 
   Serial.begin(115200);
   autohome.setPacketHandler(mqtt_callback);
-  autohome.begin(wifi_ssid, wifi_password, mqtt_broker_ip, mqtt_user, mqtt_password, host_name, mqtt_topic);
+  autohome.begin(mqtt_broker_ip, mqtt_user, mqtt_password, host_name, mqtt_topic);
 
    if (!bmp.begin()) {
   Serial.println("Could not find a valid BMP085 sensor, check wiring!");
-  while (1) {}
+      while (1)
+          delay(500);
   }
 
 }

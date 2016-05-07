@@ -2,9 +2,7 @@
 
 /* These variables need to be filled out with the information for your wifi details */
 /* and the mqtt broker */
-char const* wifi_ssid = "RG-Wifi";
-char const* wifi_password = "STBCrg123";
-char const* mqtt_broker_ip = "82.13.163.212";
+char const* mqtt_broker_ip = "192.168.1.10";
 char const* mqtt_user = "autohome";
 char const* mqtt_password = "autoHOME";
 char const* host_name = "David-Socket";
@@ -113,7 +111,7 @@ void setup() {
   autohome.setPacketHandler(mqtt_callback);
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
-  autohome.begin(wifi_ssid, wifi_password, mqtt_broker_ip, mqtt_user, mqtt_password, host_name, mqtt_topic);
+  autohome.begin(mqtt_broker_ip, mqtt_user, mqtt_password, host_name, mqtt_topic);
 
 
 
