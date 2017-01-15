@@ -1,0 +1,18 @@
+/radio/command (getState) ==== JSON info on /radio/getState
+
+/radio/command (pause) == no reply, but misic is paused
+
+/radio/command (creatPlaylist == info ? on /radio/playlist
+
+/radio/command (listPLaylist) == JSON playlist on /radio/playlist
+
+/radio/command (volume||+) == volume + 10 
+
+/radio/command (volume||42) == volume = 42
+
+
+
+
+
+
+https://github.com/volumio/Volumio2/wiki/WebSockets-API-Reference

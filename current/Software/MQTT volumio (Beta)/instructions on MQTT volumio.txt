@@ -1,0 +1,24 @@
+/// volumio 2 
+
+/topic
+
+/radio/command -- comand like play skip ect
+
+For simple commands its just play,pause,next,prev for volume its volume||10
+
+
+
+/////////////////////////////////////////////////////////////////
+
+1.) sudo apt-get install nodejs 
+2.) sudo apt-get install npm 
+
+coppy control.js to a new folder, and run the following comands there
+
+npm install mqtt
+
+npm install socket.io-client
+
+-- find a way to run this on start up in the background.
+nodejs control.js
+
