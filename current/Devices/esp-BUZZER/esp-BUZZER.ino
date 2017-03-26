@@ -190,21 +190,17 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
                   buzz = 2; // 0 = off// 1 = buzz// 2 = beep//
                   watier = (getValue(packet, ':', 2));  // the how long the beep lasts.
               }
+              
 String packet = "BUZZER:IS:" + String(m0de) + "," + String(buzz) + "," + String(watier);
 autohome.sendPacket( packet.c_str() );
+
 }
-
-
-
 
 void loop() {
   // put your main code here, to run repeatedly:
 unsigned long currentMillis = millis();
 
 autohome.loop();
-
-
-
 
 
 // recive MQTT comand 
@@ -214,13 +210,23 @@ autohome.loop();
  //   a - z   = buzz combinations 
  //   0-999   = time in seconds? 
 
+ unsigned long currentMillis = millis();
 
-// if mills == (current timed ones ?) * 1,000  ? 
-// {
-// derive MODE 
-// derive buzz
-// void MODE();
-// void BUZZ();
-// }
+  process_fade(currentMillis);
 
+  if (currentMillis - previousMillisKeypad >= 10)
+              {
+            
+             previousMillisKeypad = currentMillis;
+             void MODE();
+             void BUZZ();
+
+             watier = (watier - 1);
+
+              if(watier == 0)
+                  {
+                    char m0de = "a";  // mode selelct
+                    int buz = 0;     // 0 = off// 1 = buzz// 2 = beep//
+                  }
+              }
 }
