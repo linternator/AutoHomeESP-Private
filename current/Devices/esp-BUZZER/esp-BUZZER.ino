@@ -12,7 +12,8 @@ AutoHome autohome;
 #define ee 4
 
 char m0de = "a";  // mode selelct
-int buzz = 0; // 0 = off// 1 = buzz// 2 = beep//
+int buz = 0;     // 0 = off// 1 = buzz// 2 = beep//
+int watier = 0; // time its buzzing for
 
 
 void setup() {
@@ -140,7 +141,7 @@ void M0DE()
 void BUZZ() 
 {
   M0DE();
-   switch(buzz)
+   switch(buz)
    {
       case : '0'
         {
@@ -164,15 +165,51 @@ void BUZZ()
 
 
 
+/* Gets called when get message from any topic*/
+void mqtt_callback(char* topic, byte* payload, unsigned int length) 
+{
+  String packet = "";
+
+  for (int i = 0; i < length; i++) 
+    {
+      packet = packet + (char)payload[i];
+    }
+              if (getValue(packet, ':', 0).equals("BUZZ")) 
+              { // example // BUZZ:a:200    -- log wired buzz
+                  m0de = (getValue(packet, ':', 1));    // the mode the buzzer is in.
+                  watier = (getValue(packet, ':', 2));  // the how long the beep lasts. 
+            
+                 String packet = "RGB:IS:" + String(currR) + "," + String(currG) + "," + String(currB);
+                 autohome.sendPacket( packet.c_str() );
+              }
+
+
+          if (getValue(packet, ':', 0).equals("BEEP"))
+              { 
+                  m0de = "a";  // mode selelct
+                  buzz = 2; // 0 = off// 1 = buzz// 2 = beep//
+                  watier = (getValue(packet, ':', 2));  // the how long the beep lasts.
+              }
+String packet = "BUZZER:IS:" + String(m0de) + "," + String(buzz) + "," + String(watier);
+autohome.sendPacket( packet.c_str() );
+}
+
+
+
+
 void loop() {
   // put your main code here, to run repeatedly:
 unsigned long currentMillis = millis();
 
 autohome.loop();
 
+
+
+
+
 // recive MQTT comand 
-// example // BUZZ:a,200    -- log wired buzz
-// example // BEEP:f,1      -- short beep
+// example // BUZZ:a:200    -- log wired buzz
+// example // BEEP:f:1      -- short beep
 
  //   a - z   = buzz combinations 
  //   0-999   = time in seconds? 
