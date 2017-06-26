@@ -1,0 +1,14 @@
+// GIT //
+
+// copy git repository to where your terminal is
+git clone "web adress"
+
+// upload to git
+cd repository
+git checkout master
+git add .
+git commit -m "message"
+git push 
+
+// update repository
+git pull
