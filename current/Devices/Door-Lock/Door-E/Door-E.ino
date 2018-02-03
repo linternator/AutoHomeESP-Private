@@ -73,6 +73,8 @@ Wire.endTransmission();
 // open door
 void unlock()
 Wire.beginTransmission(0x20); 
+
+// set pin 1 of port A as on
 Wire.write(0); 0x14 // sends 0 down the bus
 opeing
 
@@ -91,6 +93,7 @@ Wire.endTransmission();
 void LOCK()
 {
 Wire.beginTransmission(0x20); 
+// set pin 1 of port A as on
 Wire.write(0); 0x14 // sends 0 down the bus
 closeing
 
@@ -106,7 +109,7 @@ delay(4);
 Wire.endTransmission();
 } 
 
-void Keys()
+void Keys() // make this better for codes like 1120 or hex codes
 {
 
  keypad1 = Read_Keypad(1);

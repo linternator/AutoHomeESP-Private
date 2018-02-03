@@ -4,11 +4,11 @@ AutoHome autohome;
 
 /* These variables need to be filled out with the information for your wifi details */
 /* and the mqtt broker */
-char const* mqtt_broker_ip = "192.168.1.10";
-char const* mqtt_user = "autohome";
-char const* mqtt_password = "autoHOME";
-char const* host_name = "Bedroom-Lights";
-char const* mqtt_topic = "/home/bedroom/lights/RGB";
+//char const* mqtt_broker_ip = "192.168.1.10";
+//char const* mqtt_user = "autohome";
+//char const* mqtt_password = "autoHOME";
+//char const* host_name = "Bedroom-Lights";
+//char const* mqtt_topic = "/home/bedroom/lights/RGB";
 
 #define RED_PIN 12 //11; // CORRECT
 #define GREEN_PIN 13  // CORRECT
@@ -49,7 +49,7 @@ void setup() {
   autohome.setPacketHandler(mqtt_callback);
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
-  autohome.begin(mqtt_broker_ip, mqtt_user, mqtt_password, host_name, mqtt_topic);
+  autohome.begin();
 
   pinMode(RED_PIN, OUTPUT);
   pinMode(GREEN_PIN, OUTPUT);
