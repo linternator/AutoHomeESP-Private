@@ -1,4 +1,5 @@
 #include <AutoHome.h>
+#include <Arduino.h>
 
 AutoHome autohome;
 
