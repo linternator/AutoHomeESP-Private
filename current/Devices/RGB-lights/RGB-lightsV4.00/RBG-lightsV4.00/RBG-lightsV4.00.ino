@@ -16,7 +16,7 @@ AutoHome autohome;
 #define BLUE_PIN 14 // CORRECT
 #define ENABLE 2 // PSU on off pin
 
-#define SCL_PIN 4
+#define SCL_PIN 4f
 #define SDO_PIN 5
 
 int currR = 0;
@@ -455,4 +455,3 @@ void process_fade(long currentMillis) {
   }
 
 }
-
