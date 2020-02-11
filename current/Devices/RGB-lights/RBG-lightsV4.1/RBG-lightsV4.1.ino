@@ -34,27 +34,6 @@ void process_fade(long currentMillis);
 void processKeypad();
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 
-void WriteVerables()
-{
-  File verables = SPIFFS.open("/verables", "w");    // open file verbales on SPIFF file system to write to. 
-   if(!verables)
-   {
-    Serial.println("error opening verbles file :C ");
-    return; 
-   }
-  char verableE[3] = {currR,currG,currB};                // creat char array
-  if(verables.print(verableE))                          // write char array to file system
-  {
-    Serial.print("wrote verables");
-  }
-  else
-     {
-      Serial.println("failed");
-     }
-
-  verables.close();  
-}
-
 void setup() {
 
   Serial.begin(115200);
@@ -77,22 +56,11 @@ void setup() {
 
   analogWriteRange(255);
 
+currR = ESP.rtcUserMemoryRead(5, &currR, sizeof(currR));    // read memory at offset and put in verable. 
+currG = ESP.rtcUserMemoryRead(9, &currG, sizeof(currG));
+currB = ESP.rtcUserMemoryRead(13, &currB, sizeof(currB));
+
   // check for last state and set to that
-  autohome.begin();
-
-  File verables = SPIFFS.open("/verables", "r");                 // opens the file on flash as "r" read
-  size_t FileSize = verables.size();                             // get file size in bytes
-
-  if(FileSize >= 3)                                                // check if file size is full or not.
-  {
-    std::unique_ptr<char[]> buf(new char[FileSize]);               // creat char arrray buffer
-    verables.readBytes(buf.get(), FileSize);                       // read file verables and put in buffer
-  
-    currR = buf[0];
-    currG = buf[1];
-    currB = buf[2];
-  }
-    verables.close();                                              // close file.
 
 }
 
@@ -203,9 +171,11 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
     }
 
-  }
+   ESP.rtcUserMemoryWrite(5, &currR, sizeof(currR));
+   ESP.rtcUserMemoryWrite(9, &currG, sizeof(currG));
+   ESP.rtcUserMemoryWrite(13, &currB, sizeof(currB));
 
-     WriteVerables();  // srite new verables to flash chip.
+  }
 
 }
 

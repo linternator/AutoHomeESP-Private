@@ -56,7 +56,7 @@ void setup() {
   // put your setup code here, to run once:
 
   pinMode(ENABLE, OUTPUT);
-  digitalWrite(ENABLE, HIGH);
+  digitalWrite(ENABLE, LOW);
 
   pinMode(WHITE_PIN, OUTPUT);
   digitalWrite(WHITE_PIN, HIGH);
@@ -66,6 +66,7 @@ void setup() {
   pinMode(BLUE_PIN, OUTPUT);
 
   Serial.begin(115200);
+   Serial.print("i live!");
 
   /* This registers the function that gets called when a packet is recieved. */
   autohome.setPacketHandler(mqtt_callback);

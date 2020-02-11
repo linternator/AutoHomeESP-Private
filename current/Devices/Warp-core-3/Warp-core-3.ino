@@ -10,15 +10,38 @@
 
 #define PIN 14
 
-uint32_t spEEd = 25;
-uint32_t cOl= 200;
-uint32_t m0de = 1;
+uint8_t spEEd = 25;
+uint8_t cOl= 200;
+uint8_t m0de = 1;
+
+// define RTC memory blocks
+// 4 bytes per block. 
 
 
 AutoHome autohome;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(45, PIN, NEO_GRB + NEO_KHZ800);
 
 
+void WriteVerables()
+{
+  File verables = SPIFFS.open("/verables", "w");    // open file verbales on SPIFF file system to write to. 
+   if(!verables)
+   {
+    Serial.println("error opening verbles file :C ");
+    return; 
+   }
+  char verableE[3] = {spEEd,cOl,m0de};                // creat char array
+  if(verables.print(verableE))                          // write char array to file system
+  {
+    Serial.print("wrote verables");
+  }
+  else
+     {
+      Serial.println("failed");
+     }
+
+  verables.close();  
+}
 
 String getValue(String data, char separator, int index)
 {
@@ -52,19 +75,23 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
     if (getValue(packet, ':', 0).equals("spEEd")) {   // spEEd
       spEEd = getValue(packet, ':', 1).toInt();
-      ESP.rtcUserMemoryWrite(5, &spEEd, sizeof(spEEd));   // if value changes, write to RTC memorty. 
+      EEPROM.put(42,spEEd);
+      EEPROM.commit();
+
+      int tesum;
+      EEPROM.get(42,tesum);
+      Serial.println(tesum);
+    //  ESP.rtcUserMemoryWrite(34,  &spEEd, sizeof(spEEd));   // if value changes, write to RTC memorty. 
     }
 
 
     if (getValue(packet, ':', 0).equals("colour")) { // colour
       cOl= getValue(packet, ':', 1).toInt();
-      ESP.rtcUserMemoryWrite(9, &cOl, sizeof(cOl));   // if value changes, write to RTC memorty. 
     }
 
 
             if (getValue(packet, ':', 0).equals("mode")) { // mode
       m0de = getValue(packet, ':', 1).toInt();
-      ESP.rtcUserMemoryWrite(13, &m0de, sizeof(m0de));   // if value changes, write to RTC memorty. 
     }
 
             if (getValue(packet, ':', 0).equals("stat")) { // stat
@@ -73,30 +100,43 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
           autohome.sendPacket( packet.c_str() );      
     }
     
-   //  Serial.print(packet);
+
+          if (getValue(packet, ':', 0).equals("reset")) { // reset CPU
+              ESP.restart();
+    }
+   WriteVerables();  // srite new verables to flash chip.
   }
 
 }
 
 
 void setup() {
-  // put your setup code here, to run once:
   
   Serial.begin(115200);
-  
-spEEd = ESP.rtcUserMemoryRead(5, &spEEd, sizeof(spEEd));    // read memory at offset and put in verable. 
-cOl=    ESP.rtcUserMemoryRead(9, &cOl, sizeof(cOl));        // read memory at offset and put in verable. 
-m0de =  ESP.rtcUserMemoryRead(13, &m0de, sizeof(m0de));     // read memory at offset and put in verable. 
 
   /* This registers the function that gets called when a packet is recieved. */
   autohome.setPacketHandler(mqtt_callback);
 
-//  strip.begin();
-//  colorWipe(strip.Color(0, 255, 0), 50); // Red
-//  strip.show(); // Initialize all pixels to 'off'
+  strip.begin();
+ // colorWipe(strip.Color(0, 255, 0), 50); // Red
+ // strip.show(); // Initialize all pixels to 'off'
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
   autohome.begin();
+
+  File verables = SPIFFS.open("/verables", "r");                 // opens the file on flash as "r" read
+  size_t FileSize = verables.size();                             // get file size in bytes
+
+if(FileSize >= 3)                                                // check if file size is full or not.
+{
+  std::unique_ptr<char[]> buf(new char[FileSize]);               // creat char arrray buffer
+  verables.readBytes(buf.get(), FileSize);                       // read file verables and put in buffer
+
+  spEEd = buf[0];
+  cOl= buf[1];
+  m0de = buf[2];
+}
+  verables.close();                                              // close file.
 
 }
 

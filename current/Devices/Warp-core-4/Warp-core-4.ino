@@ -10,15 +10,40 @@
 
 #define PIN 14
 
-uint32_t spEEd = 25;
-uint32_t cOl= 200;
-uint32_t m0de = 1;
+uint8_t spEEd = 25;         // speed of animation. 
+uint8_t cOl= 200;           // coulour of lighitng
+uint8_t m0de = 1;           // mode of operation, on, off, warp, gay. ect
+uint8_t Brightness = 255;   // over all brightness of tlighitng
+// [ strip.setBrightness(Brightness); // put before show, and after set. ]
+
+// define RTC memory blocks
+// 4 bytes per block. 
 
 
 AutoHome autohome;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(45, PIN, NEO_GRB + NEO_KHZ800);
 
 
+void WriteVerables()
+{
+  File verables = SPIFFS.open("/verables", "w");    // open file verbales on SPIFF file system to write to. 
+   if(!verables)
+   {
+    Serial.println("error opening verbles file :C ");
+    return; 
+   }
+  char verableE[3] = {spEEd,cOl,m0de,Brightness};                // creat char array
+  if(verables.print(verableE))                          // write char array to file system
+  {
+    Serial.print("wrote verables");
+  }
+  else
+     {
+      Serial.println("failed");
+     }
+
+  verables.close();  
+}
 
 String getValue(String data, char separator, int index)
 {
@@ -42,6 +67,11 @@ String getValue(String data, char separator, int index)
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
 
+// read topic watch dog. 
+ // set dogo == HIGHT;
+  // serial print watchdog feeded
+
+
   String packet = "";
   
   if (!autohome.mqtt_callback(topic, payload, length)) {
@@ -52,19 +82,23 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
     if (getValue(packet, ':', 0).equals("spEEd")) {   // spEEd
       spEEd = getValue(packet, ':', 1).toInt();
-      ESP.rtcUserMemoryWrite(5, &spEEd, sizeof(spEEd));   // if value changes, write to RTC memorty. 
+      EEPROM.put(42,spEEd);
+      EEPROM.commit();
+
+      int tesum;
+      EEPROM.get(42,tesum);
+      Serial.println(tesum);
+    //  ESP.rtcUserMemoryWrite(34,  &spEEd, sizeof(spEEd));   // if value changes, write to RTC memorty. 
     }
 
 
     if (getValue(packet, ':', 0).equals("colour")) { // colour
       cOl= getValue(packet, ':', 1).toInt();
-      ESP.rtcUserMemoryWrite(9, &cOl, sizeof(cOl));   // if value changes, write to RTC memorty. 
     }
 
 
             if (getValue(packet, ':', 0).equals("mode")) { // mode
       m0de = getValue(packet, ':', 1).toInt();
-      ESP.rtcUserMemoryWrite(13, &m0de, sizeof(m0de));   // if value changes, write to RTC memorty. 
     }
 
             if (getValue(packet, ':', 0).equals("stat")) { // stat
@@ -73,30 +107,42 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
           autohome.sendPacket( packet.c_str() );      
     }
     
-   //  Serial.print(packet);
+
+          //if (getValue(packet, ':', 0).equals("reset")) { // reset CPU
+          //    ESP.restart();
+          // }
+   WriteVerables();  // srite new verables to flash chip.
   }
 
 }
 
 
 void setup() {
-  // put your setup code here, to run once:
   
   Serial.begin(115200);
-  
-spEEd = ESP.rtcUserMemoryRead(5, &spEEd, sizeof(spEEd));    // read memory at offset and put in verable. 
-cOl=    ESP.rtcUserMemoryRead(9, &cOl, sizeof(cOl));        // read memory at offset and put in verable. 
-m0de =  ESP.rtcUserMemoryRead(13, &m0de, sizeof(m0de));     // read memory at offset and put in verable. 
 
   /* This registers the function that gets called when a packet is recieved. */
   autohome.setPacketHandler(mqtt_callback);
 
-//  strip.begin();
-//  colorWipe(strip.Color(0, 255, 0), 50); // Red
-//  strip.show(); // Initialize all pixels to 'off'
+  strip.begin();
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
   autohome.begin();
+
+  File verables = SPIFFS.open("/verables", "r");                 // opens the file on flash as "r" read
+  size_t FileSize = verables.size();                             // get file size in bytes
+
+if(FileSize >= 4)                                                // check if file size is full or not.
+{
+  std::unique_ptr<char[]> buf(new char[FileSize]);               // creat char arrray buffer
+  verables.readBytes(buf.get(), FileSize);                       // read file verables and put in buffer
+
+  spEEd = buf[0];
+  cOl= buf[1];
+  m0de = buf[2];
+  Brightness = buf[3];  // overall brightness
+}
+  verables.close();                                              // close file.
 
 }
 
@@ -109,6 +155,7 @@ switch( m0de)
         //set all pixels to off
          strip.begin();
          colorWipe(strip.Color(0, 0, 0), 50); // Red
+         // strip.setBrightness(Brightness);  // nbot realy needed, but hey
          strip.show(); // Initialize all pixels to 'off'
       } break;
 
@@ -124,6 +171,7 @@ switch( m0de)
           for(int R=0; R<50; R++)
           {
          strip.setPixelColor(R , Wheel((cOl) & 255)); //
+       //  strip.setBrightness(Brightness);             // set total brightness
          strip.show(); // Initialize all pixels to 'off'
           }
       } break;
@@ -149,8 +197,29 @@ switch( m0de)
   }
 
   delay(0);
-
+  strip.setBrightness(Brightness);
   autohome.loop();
+
+
+
+
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= 1000) {         // interval of 1 second.
+    previousMillis = currentMillis; // something something reset timer.
+    if (dogo == LOW) {      // if watch dog not feed
+      ESPreset();           // reset esp
+    } else {
+      dogo = LOW;           // set to 0 to wait for new food.
+    }
+  }
+
+
+
+
+
+
+
 
 }
 
@@ -172,6 +241,7 @@ void rainbowCycle(uint8_t wait) {
     for(i=0; i< strip.numPixels(); i++) {
       strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
     }
+    //strip.setBrightness(Brightness);
     strip.show();
       autohome.loop();
     delay(wait);
@@ -185,6 +255,7 @@ void theaterChaseRainbow(uint8_t wait) {
       for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
         strip.setPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
       }
+   //   strip.setBrightness(Brightness);
       strip.show();
   autohome.loop();
       delay(wait);
@@ -214,7 +285,7 @@ void Warp(uint8_t facotr) {
 
 //              switch(i)
 //                {
-//                  case :>0<5   // pulsing up
+//                  case :>0<5   // pulsing upstrip.setBrightness(Brightness);
 //                    {
 //                        strip.setPixelColor(L, 255,255,(50*i));  // add pulsing in the middle
 //                    }break;
@@ -238,6 +309,7 @@ void Warp(uint8_t facotr) {
 //                }
     }
 
+  //  strip.setBrightness(Brightness);
     delay(facotr);
     strip.show();
 
