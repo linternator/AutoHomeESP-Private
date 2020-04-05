@@ -5,9 +5,18 @@ mode:
 	1	-- R G B
 	2	-- rainbow 1
 	3	-- rianbow 2
+	4	-- vue-screen
 
 set:	
 	R:G:B	-- R G B 
 
 speed:
 	0-1000	-- speed of light cycal
+
+
+examples: 
+
+mode:3
+speed:5
+set:255:255:20
+

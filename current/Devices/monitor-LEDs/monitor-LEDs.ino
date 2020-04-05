@@ -9,18 +9,27 @@
 #define PIN 12
  String packet = "";
 
- int mode = 0;
+ int mode = 1;
  int speed = 1;
 
+ int NumberOfPixels = 33;
+
  int colorR = 0;
- int colorG = 0;
+ int colorG = 255;
  int colorB = 0;
+
+int   prevR = 0;
+int   prevG = 0;
+int   prevB = 0;
+int   prevW = 0;
 
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(11, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NumberOfPixels, PIN, NEO_GRB + NEO_KHZ800);
+
+// 11 pixels per "strip" 5 strips.
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
@@ -73,6 +82,11 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length){
                 } break;
 
               case 4: // theater chase rainbow
+                {
+         //         String packet = "theaterChaseRainbow:" + "," + speed;
+                } break;
+
+              case 5: // vue-screen
                 {
          //         String packet = "theaterChaseRainbow:" + "," + speed;
                 } break;
@@ -149,28 +163,21 @@ void loop() {
   /* This needs to be called in the loop as it handels the reconection to the mqtt server if it disconnects*/
   autohome.loop();
 
-// mode = 0;
-// speed = 0;
-
-// colorR = 0;
-// colorG = 0;
-// colorB = 0;
-
   switch(mode)
     {
       case 0: // off
         {
-          colorWipe(strip.Color(0, 0, 0), 1);
+          colorWipe(strip.Color(0, 0, 0), 1); // get this to fade to clouor instead
         } break;
 
       case 1: // solid coulor
         {
-          colorWipe(strip.Color(colorR, colorG , colorB), speed); // Red
+          colorWipe(strip.Color(colorR, colorG , colorB), speed); // get this to fade to clouor instead
         } break;
 
       case 2: // rainbow!
         {
-          rainbowCycle(speed);
+          rainbowCycle(speed);          // modifie to be non blocking code.
         } break;
 
       case 3: // lesser rainbow
@@ -181,29 +188,77 @@ void loop() {
       case 4: // theater chase rainbow
         {
           theaterChaseRainbow(speed);
-        } break;
-
-      
+        } break; 
     }
-
-  // Some example procedures showing how to display to the pixels:
-//  colorWipe(strip.Color(255, 0, 0), 50); // Red
-//  colorWipe(strip.Color(0, 255, 0), 50); // Green
-//  colorWipe(strip.Color(0, 0, 255), 50); // Blue
-//colorWipe(strip.Color(0, 0, 0, 255), 50); // White RGBW
-
-  // Send a theater pixel chase in...
- // theaterChase(strip.Color(127, 127, 127), 50); // White
- // theaterChase(strip.Color(127, 0, 0), 50); // Red
- // theaterChase(strip.Color(0, 0, 127), 50); // Blue
-
-  //rainbow(20);
- // rainbowCycle(1);
- // theaterChaseRainbow(50);
-  
 }
 
+//void process_fade(long currentMillis) {
+//
+//  if (fade) {
+//
+//    SETRGB(prevR,prevG,prevB,prevW);
+//
+//    if (currentMillis - previousMillisFade >= fadeTime) {
+//
+//      previousMillisFade = currentMillis;
+//
+//      if (prevR < colorR) {
+//        prevR++;
+//      }
+//
+//      if (prevG < colorG) {
+//        prevG++;
+//      }
+//
+//      if (prevB < colorB) {
+//        prevB++;
+//      }
+//
+//      if (prevR > colorR) {
+//        prevR--;
+//      }
+//
+//      if (prevG > colorG) {
+//        prevG--;
+//      }
+//
+//      if (prevB > colorB) {
+//        prevB--;
+//      }
+//
+//      if (prevB > colorB) {
+//        prevB--;
+//      }
+//
+//      if (prevR == colorR && prevG == colorG && prevB == colorB) {
+//
+//        fade = false;
+//        previousMillisFade = 0;
+//
+//        SETRGB(prevR,prevG,prevB);
+//
+//        String packet = "RGB:IS:" + String(currR) + "," + String(currG) + "," + String(currB);
+//        autohome.sendPacket( packet.c_str() );
+//      }
+//    }
+//  }
+//}
 
+//void SETRGB(int r, int g, int b, int w) {
+//
+//for(number of pixles, int X = 0, X++)
+//{
+//   // strip.setPixelColor(i, c);
+//    strip.Color(r,g,b)
+//    strip.show();
+//}
+//
+//  prevR = r;
+//  prevG = g;
+//  prevB = b;
+//  prevW = w;
+//
+//}
 
 
 // Fill the dots one after the other with a color
