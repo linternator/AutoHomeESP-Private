@@ -105,17 +105,7 @@ void off(int wait)
   strip.begin();
   //  for(int i=0; i<strip.numPixels(); i++)
   {                                // For each pixel in strip...
-    strip.setPixelColor(i, color); //  Set pixel's color (in RAM)
-    strip.show();                  //  Update strip to match
-
-    if (i <= strip.numPixels())
-    {
-      i = 0;
-    }
-    else
-    {
-      i++;
-    }
+      colorWipe(strip.Color(0, 0, 0)); // Red
     delay(wait); //  Pause for a moment
   }
 }
@@ -194,7 +184,8 @@ void loop()
   {
     //set all pixels to off
     strip.begin();
-    colorWipe(strip.Color(0, 0, 0)); // Red
+    //colorWipe(strip.Color(0, 0, 0)); // off
+    strip.clear();
     strip.show();                    // Initialize all pixels to 'off'
     digitalWrite(PSU_PIN, HIGH);     // turn off PSU
   }
@@ -224,5 +215,15 @@ void loop()
     // strip.setPixelColor(R , Wheel((cOl) & 255)); //
   }
   break;
+  
+
+  case 4:
+  {
+    //set all pixels to off
+    strip.begin();
+    colorWipe( strip.Color(255, 255, 255) ); // off
+    strip.show();                    // Initialize all pixels to 'off'
+    digitalWrite(PSU_PIN, HIGH);     // turn off PSU
   }
-}
+  break;
+}}
