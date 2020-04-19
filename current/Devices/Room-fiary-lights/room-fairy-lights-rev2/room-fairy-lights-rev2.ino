@@ -39,6 +39,31 @@ String getValue(String data, char separator, int index)
     return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
+void WriteVerables()
+{
+  LittleFS.begin();
+  
+  File verables = LittleFS.open("/verables", "w");    // open file verbales on SPIFF file system to write to. 
+   if(!verables)
+   {
+    Serial.println("error opening verbles file D; ");
+    return; 
+   }
+
+  char verableE[7] = {m0de,wait,color,brightness,prev_brightness,next_brightness,fade};                // creat char array
+  if(verables.print(verableE))                          // write char array to file system
+  {
+    Serial.println("wrote verables");
+  }
+  else
+     {
+      Serial.println("failed");
+     }
+
+  verables.close();  
+  LittleFS.end();
+}
+
 void mqtt_callback(char *topic, byte *payload, unsigned int length)
 {
 
@@ -89,6 +114,7 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
         }
 
         Serial.print(packet);
+         WriteVerables();  // srite new verables to flash chip.
     }
 }
 
@@ -103,23 +129,36 @@ void setup()
     autohome.setPacketHandler(mqtt_callback);
     autohome.begin();
 
+LittleFS.begin();
+
+  File verables = LittleFS.open("/verables", "r");   // opens the file on flash as "r" read
+
+   
+  size_t FileSize = verables.size();                             // get file size in bytes
+
+    if(FileSize >= 3)                                                // check if file size is full or not.
+        {
+        std::unique_ptr<char[]> buf(new char[FileSize]);               // creat char arrray buffer
+        verables.readBytes(buf.get(), FileSize);                       // read file verables and put in buffer
+
+        m0de = buf[0];
+        wait= buf[1];
+        color = buf[2];
+        brightness = buf[3];
+        prev_brightness = buf[4];
+        next_brightness = buf[5];
+        fade = buf[6];
+        Serial.println("done reading file system"); 
+        }
+  verables.close();
+LittleFS.end();
+Serial.println("loggling"); 
     // load verables  from rom.
 }
 
 void off(int wait)
 {
     fade = 1;
-  //  delay(wait);
-
-//   if(brightness == 0)
-//      {
-//        ;;
-//      }
-//        else
-//          {
-//            brightness--;
-//            
-//          }
  }
 
 void bright()
