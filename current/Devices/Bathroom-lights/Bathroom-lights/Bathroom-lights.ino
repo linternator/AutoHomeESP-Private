@@ -145,7 +145,7 @@ void setup()
   Serial.begin(115200);
 
   // On/Off button
-  pinMode(ON_OFF_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(ON_OFF_BUTTON_PIN, INPUT);
 
   // Initialize NeoPixel strip object
   pixels.begin();
@@ -179,7 +179,7 @@ void loop()
 
   if (USE_ON_OFF_BUTTON)
   {
-    if (digitalRead(ON_OFF_BUTTON_PIN) == LOW && (state == TurnedOff || state == TurningOff))
+    if (digitalRead(ON_OFF_BUTTON_PIN) == HIGH && (state == TurnedOff || state == TurningOff))
     {
       // The switch have been turned on
       WW = default_WW;
@@ -189,7 +189,7 @@ void loop()
       Serial.println("Turn on");
     }
     else if (
-        digitalRead(ON_OFF_BUTTON_PIN) == HIGH && state != TurnedOff && state != TurningOff)
+        digitalRead(ON_OFF_BUTTON_PIN) == LOW && state != TurnedOff && state != TurningOff)
     {
       // The switch have been turned off
       set_state(TurningOff);
