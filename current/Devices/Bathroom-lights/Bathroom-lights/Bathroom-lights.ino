@@ -2,31 +2,58 @@
 
 #include <AutoHome.h>
 #include <Adafruit_NeoPixel.h>
-#ifdef __AVR__
-#include <avr/power.h> // Required for 16 MHz Adafruit Trinket
-#endif
 
-#define PIN        0 // On Trinket or Gemma, suggest changing this to 1
-#define OnOFF       2 // PSU on off pin
+// Pin to turn the lights on/off
+#define ON_OFF_BUTTON_PIN 5
 
-int WW  = 0;
-int CW  = 0;
-int AM  = 0;
+// Wether the on/off button should be used.
+// If set to false, you can send MQTT packages: "STATE:0" (Turn off) and "STATE:1" (Turn on)
+#define USE_ON_OFF_BUTTON false
 
-bool onOFF = 0;
+// On Trinket or Gemma, suggest changing this to 1
+#define NEO_PIXEL_PIN 16
 
-#define NUMPIXELS 120 // Popular NeoPixel ring size
+// Popular NeoPixel ring size
+#define NUMBER_OF_PIXELS 120
 
-Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+enum LightState
+{
+  TurnedOff = 1,
+  TurningOff = 2,
+  TurnedOn = 4,
+  TurningOn = 8,
+  ColourChangeRequest = 16
+};
+
+int WW = 128;
+int CW = 128;
+int AM = 128;
+bool changeColourRequested = false;
+
+// Keep track of state
+LightState state = TurnedOff;
+unsigned long state_time;
+//int current_neopixel = 0;
+//int updateSpeed = 1;
+//int lightsPerUpdate = 1;
+
+Adafruit_NeoPixel pixels(NUMBER_OF_PIXELS, NEO_PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 AutoHome autohome;
 
+void mqtt_send_stats()
+{
+  String packet = "Bathroom is, WW:" + String(WW) +
+                  ", CW:" + String(CW) +
+                  ", AM:" + String(AM) +
+                  ", State:" + String(state) +
+                  ", State time:" + String(state_time);
+  autohome.sendPacket(packet.c_str());
+}
 
 void mqtt_callback(char *topic, byte *payload, unsigned int length)
 {
-
   String packet = "";
-
   for (int i = 0; i < length; i++)
   {
     packet = packet + (char)payload[i];
@@ -34,87 +61,142 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
 
   if (autohome.getValue(packet, ':', 0).equals("SET"))
   {
-    WW = autohome.getValue(packet, ',' , 1).toInt();
-    CW = autohome.getValue(packet, ',' , 2).toInt();
-    AM = autohome.getValue(packet, ',' , 3).toInt();
+    WW = autohome.getValue(packet, ',', 1).toInt();
+    CW = autohome.getValue(packet, ',', 2).toInt();
+    AM = autohome.getValue(packet, ',', 3).toInt();
 
-    String packet = "bathroom is, WW:" + String(WW) + ", CW:" + String(CW) + ", AM:" + String(AM);
-    autohome.sendPacket(packet.c_str());
+    mqtt_send_stats();
+    changeColourRequested = true;
   }
 
   if (autohome.getValue(packet, ':', 0).equals("WW"))
-  { // colour
+  {
+    // colour
     WW = autohome.getValue(packet, ':', 1).toInt();
-    String packet = "bathroom is, WW:" + String(WW) + ", CW:" + String(CW) + ", AM:" + String(AM);
-    autohome.sendPacket(packet.c_str());
+    mqtt_send_stats();
+    changeColourRequested = true;
   }
 
   if (autohome.getValue(packet, ':', 0).equals("CW"))
-  { // colour
+  {
+    // colour
     CW = autohome.getValue(packet, ':', 1).toInt();
-    String packet = "bathroom is, WW:" + String(WW) + ", CW:" + String(CW) + ", AM:" + String(AM);
-    autohome.sendPacket(packet.c_str());
+    mqtt_send_stats();
+    changeColourRequested = true;
   }
 
   if (autohome.getValue(packet, ':', 0).equals("AM"))
-  { // colour
+  {
+    // colour
     AM = autohome.getValue(packet, ':', 1).toInt();
-    String packet = "bathroom is, WW:" + String(WW) + ", CW:" + String(CW) + ", AM:" + String(AM);
-    autohome.sendPacket(packet.c_str());
+    mqtt_send_stats();
+    changeColourRequested = true;
   }
 
-
+  if (autohome.getValue(packet, ':', 0).equals("STATE") && !USE_ON_OFF_BUTTON)
+  {
+    // colour
+    int new_state = autohome.getValue(packet, ':', 1).toInt();
+    if (new_state == 0)
+    {
+      set_state(TurningOff);
+    }
+    else if (new_state == 1)
+    {
+      set_state(TurningOn);
+    }
+    mqtt_send_stats();
+    changeColourRequested = true;
+  }
 
   if (autohome.getValue(packet, ':', 0).equals("stat"))
-  { // stat
-
-    String packet = "bathroom is, WW:" + String(WW) + ", CW:" + String(CW) + ", AM:" + String(AM);
-    autohome.sendPacket(packet.c_str());
+  {
+    // stats
+    mqtt_send_stats();
   }
 }
 
+void setup()
+{
 
-void setup() {
-  // put your setup code here, to run once:
-
-#if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
-  clock_prescale_set(clock_div_1);
-#endif
-  // END of Trinket-specific code.
-
-  pinMode(OnOFF, OUTPUT);
-  // digitalWrite(OnOFF, LOW);
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
   Serial.begin(115200);
-  Serial.println("hello worms");
+
+  // On/Off button
+  pinMode(ON_OFF_BUTTON_PIN, INPUT_PULLUP);
+
+  // Initialize NeoPixel strip object
+  pixels.begin();
 
   /* This registers the function that gets called when a packet is recieved. */
   autohome.setPacketHandler(mqtt_callback);
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
   autohome.begin();
+  //state = TurnedOff;
+  //state_time = millis();
 }
 
+void set_state(LightState new_state)
+{
+  state = new_state;
+  state_time = millis();
+}
 
-void loop() {
-
+void loop()
+{
   autohome.loop();
-  
-  for (int i = 0; i < NUMPIXELS; i++)
-  {  
-    pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
-    pixels.show();   // Send the updated pixel colors to the hardware.
+
+  // Update state
+  if (changeColourRequested)
+  {
+    // Can only update the color if we are turned on
+    if (state == TurningOn ||
+        state == TurnedOn ||
+        state == ColourChangeRequest)
+    {
+      set_state(ColourChangeRequest);
+    }
+    changeColourRequested = false;
   }
 
-  if ( WW == 0 && CW == 0 && AM == 0)
+  if (USE_ON_OFF_BUTTON)
   {
-    onOFF = true;
-    digitalWrite(OnOFF, HIGH);
-  }
-  else
-  {
-    onOFF = true;
-    digitalWrite(OnOFF, LOW);
+    if (digitalRead(ON_OFF_BUTTON_PIN) == LOW &&
+        (state == TurnedOff ||
+         state == TurningOff))
+    {
+      // The switch have been turned on
+      set_state(TurningOn);
+    }
+    else if (
+        digitalRead(ON_OFF_BUTTON_PIN) == HIGH &&
+        (state != TurnedOff ||
+         state != TurningOff))
+    {
+      // The switch have been turned off
+      set_state(TurningOff);
+    }
   }
 
+  if (state == TurningOn ||
+      state == ColourChangeRequest)
+  {
+    // Set the color
+    for (int i = 0; i < NUMBER_OF_PIXELS; i++)
+    {
+      pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
+      pixels.show(); // Send the updated pixel colors to the hardware.
+    }
+    set_state(TurnedOn);
+  }
+  else if (state == TurningOff)
+  {
+    // Turn off
+    for (int i = 0; i < NUMBER_OF_PIXELS; i++)
+    {
+      pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+      pixels.show(); // Send the updated pixel colors to the hardware.
+    }
+    set_state(TurnedOn);
+  }
 }
