@@ -4,17 +4,17 @@
 #include <Adafruit_NeoPixel.h>
 
 // Pin to turn the lights on/off
-#define ON_OFF_BUTTON_PIN 5
+#define ON_OFF_BUTTON_PIN 12
 
 // Wether the on/off button should be used.
 // If set to false, you can send MQTT packages: "STATE:0" (Turn off) and "STATE:1" (Turn on)
-#define USE_ON_OFF_BUTTON false
+#define USE_ON_OFF_BUTTON true
 
 // On Trinket or Gemma, suggest changing this to 1
-#define NEO_PIXEL_PIN 16
+#define NEO_PIXEL_PIN 13
 
 // Popular NeoPixel ring size
-#define NUMBER_OF_PIXELS 120
+#define NUMBER_OF_PIXELS 122
 
 enum LightState
 {
@@ -24,6 +24,10 @@ enum LightState
   TurningOn = 8,
   ColourChangeRequest = 16
 };
+
+int default_WW = 128;
+int default_CW = 128;
+int default_AM = 128;
 
 int WW = 128;
 int CW = 128;
@@ -40,6 +44,14 @@ unsigned long state_time;
 Adafruit_NeoPixel pixels(NUMBER_OF_PIXELS, NEO_PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 AutoHome autohome;
+
+
+void set_state(LightState new_state)
+{
+  state = new_state;
+  state_time = millis();
+}
+
 
 void mqtt_send_stats()
 {
@@ -68,6 +80,17 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
     mqtt_send_stats();
     changeColourRequested = true;
   }
+
+ if (autohome.getValue(packet, ':', 0).equals("SET_DEFAULT"))
+  {
+    default_WW = autohome.getValue(packet, ',', 1).toInt();
+    default_CW = autohome.getValue(packet, ',', 2).toInt();
+    default_AM = autohome.getValue(packet, ',', 3).toInt();
+
+    mqtt_send_stats();
+    changeColourRequested = true;
+  }
+
 
   if (autohome.getValue(packet, ':', 0).equals("WW"))
   {
@@ -132,20 +155,15 @@ void setup()
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
   autohome.begin();
-  //state = TurnedOff;
-  //state_time = millis();
+  set_state(TurningOff);
 }
 
-void set_state(LightState new_state)
-{
-  state = new_state;
-  state_time = millis();
-}
+
 
 void loop()
 {
   autohome.loop();
-
+   
   // Update state
   if (changeColourRequested)
   {
@@ -161,20 +179,21 @@ void loop()
 
   if (USE_ON_OFF_BUTTON)
   {
-    if (digitalRead(ON_OFF_BUTTON_PIN) == LOW &&
-        (state == TurnedOff ||
-         state == TurningOff))
+    if (digitalRead(ON_OFF_BUTTON_PIN) == LOW && (state == TurnedOff || state == TurningOff))
     {
       // The switch have been turned on
+      WW = default_WW;
+      AM = default_AM;
+      CW = default_CW;
       set_state(TurningOn);
+      Serial.println("Turn on");
     }
     else if (
-        digitalRead(ON_OFF_BUTTON_PIN) == HIGH &&
-        (state != TurnedOff ||
-         state != TurningOff))
+        digitalRead(ON_OFF_BUTTON_PIN) == HIGH && state != TurnedOff && state != TurningOff)
     {
       // The switch have been turned off
       set_state(TurningOff);
+      Serial.println("Turn off");
     }
   }
 
@@ -185,8 +204,9 @@ void loop()
     for (int i = 0; i < NUMBER_OF_PIXELS; i++)
     {
       pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
-      pixels.show(); // Send the updated pixel colors to the hardware.
     }
+    pixels.show(); // Send the updated pixel colors to the hardware.
+
     set_state(TurnedOn);
   }
   else if (state == TurningOff)
@@ -195,8 +215,8 @@ void loop()
     for (int i = 0; i < NUMBER_OF_PIXELS; i++)
     {
       pixels.setPixelColor(i, pixels.Color(0, 0, 0));
-      pixels.show(); // Send the updated pixel colors to the hardware.
     }
-    set_state(TurnedOn);
+    pixels.show(); // Send the updated pixel colors to the hardware.
+    set_state(TurnedOff);
   }
 }

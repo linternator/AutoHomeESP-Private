@@ -2,3 +2,11 @@ SET:WW,CW,AM
 WW:0-255
 CW:0-255
 AM:0-255
+SET_DEFAULT:WW,CW,AM
+
+// If you have set USE_ON_OFF_BUTTON = false you can use:
+// 0 = Turn off
+STATE:0
+// 1 = Turn on
+STATE:1
+
