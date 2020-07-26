@@ -15,10 +15,10 @@ uint32_t currG = 0;
 uint32_t currB = 0;
 uint32_t currW = 0;
 
-int prevR = 0;
-int prevG = 0;
-int prevB = 0;
-int prevW = 0;
+uint32_t prevR = 0;
+uint32_t prevG = 0;
+uint32_t prevB = 0;
+uint32_t prevW = 0;
 
 unsigned long previousMillisKeypad = 0;
 unsigned long previousMillisFade = 0;
@@ -30,6 +30,30 @@ void SETRGB(int r, int g, int b, int w);
 void process_fade(long currentMillis);
 // void process_fade(long currentMillis);
 
+void WriteVerables()
+{
+  LittleFS.begin();
+  
+  File verables = LittleFS.open("/verables", "w");    // open file verbales on SPIFF file system to write to. 
+   if(!verables)
+   {
+    Serial.println("error opening verbles file D; ");
+    return; 
+   }
+
+  char verableE[8] = {currR,currG,currB,currW ,prevR,prevG,prevB,prevW};                // creat char array
+  if(verables.print(verableE))                          // write char array to file system
+  {
+    Serial.println("wrote verables");
+  }
+  else
+     {
+      Serial.println("failed");
+     }
+
+  verables.close();  
+  LittleFS.end();
+}
 
 /* This function will be called every time a packet is received from the mqtt topic. */
 /* This is registered in the setup() */
@@ -84,7 +108,8 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     Serial.print(packet);
 
   }
-
+  // write verables
+  WriteVerables();  // srite new verables to flash chip.
 }
 
 String getValue(String data, char separator, int index)
@@ -113,7 +138,7 @@ void setup() {
   digitalWrite(ENABLE, HIGH);
 
   pinMode(WHITE_PIN, OUTPUT);
-  digitalWrite(WHITE_PIN, HIGH);
+ // digitalWrite(WHITE_PIN, HIGH);  // turn on bulb on start up.
 
   pinMode(RED_PIN, OUTPUT);
   pinMode(GREEN_PIN, OUTPUT);
@@ -129,6 +154,36 @@ void setup() {
 
   analogWriteFreq(500);
   analogWriteRange(255);
+
+ 
+LittleFS.begin();
+
+  File verables = LittleFS.open("/verables", "r");   // opens the file on flash as "r" read
+
+   
+  size_t FileSize = verables.size();                             // get file size in bytes
+
+    if(FileSize >= 6)                                                // check if file size is full or not.
+        {
+        std::unique_ptr<char[]> buf(new char[FileSize]);               // creat char arrray buffer
+        verables.readBytes(buf.get(), FileSize);                       // read file verables and put in buffer
+
+        currR = buf[0];
+        currG= buf[1];
+        currB = buf[2];
+        currW = buf[3];
+        
+        prevR = buf[4];
+        prevG = buf[5];
+        prevB = buf[6];
+        prevW = buf[6];
+        
+        Serial.println("done reading file system"); 
+        }
+  verables.close();
+LittleFS.end();
+Serial.println("loggling"); 
+    // load verables  from rom. 
 
 }
 

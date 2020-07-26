@@ -67,10 +67,6 @@ String getValue(String data, char separator, int index)
 void mqtt_callback(char *topic, byte *payload, unsigned int length)
 {
 
-  // read topic watch dog.
-  // set dogo == HIGHT;
-  // serial print watchdog feeded
-
   String packet = "";
 
   if (!autohome.mqtt_callback(topic, payload, length))
@@ -163,7 +159,7 @@ void loop()
 
   case 1:
   {
-    Warp(spEEd); // warp spEEd!
+    // thing 
   }
   break;
 
@@ -269,55 +265,6 @@ void theaterChaseRainbow(uint8_t wait)
         strip.setPixelColor(i + q, 0); //turn every third pixel off
       }
     }
-  }
-}
-
-void Warp(uint8_t facotr)
-{
-
-  strip.clear();
-
-  for (int i = -5; i <= 20; i++)
-  {
-    strip.setPixelColor(i, 0, 0, 0);              // top part of the warp core
-    strip.setPixelColor(i + 1, Wheel((cOl)&255)); //
-
-    strip.setPixelColor(43 - i, Wheel((cOl)&255)); //  // bottom part of the warp core
-    strip.setPixelColor(44 - i, 0, 0, 0);
-
-    for (int L = 20; L <= 24; L++) // intermix chmaber glows birhgter.
-    {
-      strip.setPixelColor(L, 255, 255, 255); // add pulsing in the middle
-
-      //              switch(i)
-      //                {
-      //                  case :>0<5   // pulsing upstrip.setBrightness(Brightness);
-      //                    {
-      //                        strip.setPixelColor(L, 255,255,(50*i));  // add pulsing in the middle
-      //                    }break;
-      //
-      //                  case :>5<10   // pulsing down
-      //                    {
-      //                      strip.setPixelColor(L, 255,255,(250/i));  // add pulsing in the middle
-      //                    }break;
-      //
-      //                  case :>10<19  //  constant
-      //                    {
-      //                      strip.setPixelColor(L, 255,255,140);  // add pulsing in the middle
-      //
-      //                    }break;
-      //
-      //                  case :20  // flash up.
-      //                    {
-      //                      strip.setPixelColor(L, 255,100,200);  // add pulsing in the middle
-      //
-      //                    }break;
-      //                }
-    }
-
-    //  strip.setBrightness(Brightness);
-    delay(facotr);
-    strip.show();
   }
 }
 

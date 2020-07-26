@@ -121,7 +121,7 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
 void setup()
 {
     Serial.begin(115200);
-
+    pinMode(PSU_PIN,OUTPUT);
     digitalWrite(PSU_PIN, HIGH);
     strip.begin();                     // INITIALIZE NeoPixel strip object (REQUIRED)
     strip.setBrightness(255);          // Set BRIGHTNESS to about 1/5 (max = 255)
@@ -275,7 +275,10 @@ void loop()
     {
         off(wait);
         strip.show();                // Initialize all pixels to 'off'
-        digitalWrite(PSU_PIN, HIGH); // turn off PSU
+        if(next_brightness == 0)
+          { digitalWrite(PSU_PIN, HIGH); // turn off PSU
+          }
+        
     }
     break;
 
