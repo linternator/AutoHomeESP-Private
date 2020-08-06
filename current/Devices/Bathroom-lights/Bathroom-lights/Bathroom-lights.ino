@@ -25,6 +25,16 @@ enum LightState
   ColourChangeRequest = 16
 };
 
+struct TurnOnAnimation
+{
+  float AnimationTimeMs = 200;
+  int HighlightWidth = 5;
+  int HighlightWW = 255;
+  int HighlightCW = 255;
+  int HighlightAM = 255;
+};
+
+TurnOnAnimation turnOnAnimation;
 int default_WW = 128;
 int default_CW = 128;
 int default_AM = 128;
@@ -36,22 +46,16 @@ bool changeColourRequested = false;
 
 // Keep track of state
 LightState state = TurnedOff;
-unsigned long state_time;
-//int current_neopixel = 0;
-//int updateSpeed = 1;
-//int lightsPerUpdate = 1;
+unsigned long stateStartTime;
 
 Adafruit_NeoPixel pixels(NUMBER_OF_PIXELS, NEO_PIXEL_PIN, NEO_GRB + NEO_KHZ800);
-
 AutoHome autohome;
-
 
 void set_state(LightState new_state)
 {
   state = new_state;
-  state_time = millis();
+  stateStartTime = millis();
 }
-
 
 void mqtt_send_stats()
 {
@@ -59,7 +63,7 @@ void mqtt_send_stats()
                   ", CW:" + String(CW) +
                   ", AM:" + String(AM) +
                   ", State:" + String(state) +
-                  ", State time:" + String(state_time);
+                  ", State Start time:" + String(stateStartTime);
   autohome.sendPacket(packet.c_str());
 }
 
@@ -81,7 +85,7 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
     changeColourRequested = true;
   }
 
- if (autohome.getValue(packet, ':', 0).equals("SET_DEFAULT"))
+  if (autohome.getValue(packet, ':', 0).equals("SET_DEFAULT"))
   {
     default_WW = autohome.getValue(packet, ',', 1).toInt();
     default_CW = autohome.getValue(packet, ',', 2).toInt();
@@ -90,7 +94,6 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
     mqtt_send_stats();
     changeColourRequested = true;
   }
-
 
   if (autohome.getValue(packet, ':', 0).equals("WW"))
   {
@@ -158,12 +161,10 @@ void setup()
   set_state(TurningOff);
 }
 
-
-
 void loop()
 {
   autohome.loop();
-   
+
   // Update state
   if (changeColourRequested)
   {
@@ -200,14 +201,38 @@ void loop()
   if (state == TurningOn ||
       state == ColourChangeRequest)
   {
-    // Set the color
-    for (int i = 0; i < NUMBER_OF_PIXELS; i++)
+    unsigned long currentTime = millis();
+    unsigned long timeSinceStart = currentTime - stateStartTime;
+    if (timeSinceStart < turnOnAnimation.AnimationTimeMs)
     {
-      pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
-    }
-    pixels.show(); // Send the updated pixel colors to the hardware.
+      float ratio = timeSinceStart / turnOnAnimation.AnimationTimeMs;
+      int pixelsTurnedOn = NUMBER_OF_PIXELS * ratio;
+      for (int i = 0; i < pixelsTurnedOn && i < NUMBER_OF_PIXELS; i++)
+      {
+        pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
+      }
+      for (int i = pixelsTurnedOn; i < pixelsTurnedOn + turnOnAnimation.HighlightWidth && i < NUMBER_OF_PIXELS; i++)
+      {
+        pixels.setPixelColor(i, pixels.Color(
+                                    turnOnAnimation.HighlightAM,
+                                    turnOnAnimation.HighlightCW,
+                                    turnOnAnimation.HighlightWW));
+      }
 
-    set_state(TurnedOn);
+      // Send the updated pixel colors to the hardware.
+      pixels.show();
+    }
+    else
+    {
+      // Set the color
+      for (int i = 0; i < NUMBER_OF_PIXELS; i++)
+      {
+        pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
+      }
+      // Send the updated pixel colors to the hardware.
+      pixels.show();
+      set_state(TurnedOn);
+    }
   }
   else if (state == TurningOff)
   {
