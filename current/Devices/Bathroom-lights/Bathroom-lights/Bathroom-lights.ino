@@ -27,14 +27,27 @@ enum LightState
 
 struct TurnOnAnimation
 {
+  // How long the turn on animation should be in ms
   float AnimationTimeMs = 200;
+
+  // How wide the highlight should be in number of Leds
   int HighlightWidth = 5;
+
+  // The color of the highlight
   int HighlightWW = 255;
   int HighlightCW = 255;
   int HighlightAM = 255;
 };
 
+struct TurnOffAnimation
+{
+  // How long the turn off animation should be in ms
+  float AnimationTimeMs = 200;
+};
+
 TurnOnAnimation turnOnAnimation;
+TurnOffAnimation turnOffAnimation;
+
 int default_WW = 128;
 int default_CW = 128;
 int default_AM = 128;
@@ -201,42 +214,87 @@ void loop()
   if (state == TurningOn ||
       state == ColourChangeRequest)
   {
-    unsigned long currentTime = millis();
-    unsigned long timeSinceStart = currentTime - stateStartTime;
-    if (timeSinceStart < turnOnAnimation.AnimationTimeMs)
-    {
-      float ratio = timeSinceStart / turnOnAnimation.AnimationTimeMs;
-      int pixelsTurnedOn = NUMBER_OF_PIXELS * ratio;
-      for (int i = 0; i < pixelsTurnedOn && i < NUMBER_OF_PIXELS; i++)
-      {
-        pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
-      }
-      for (int i = pixelsTurnedOn; i < pixelsTurnedOn + turnOnAnimation.HighlightWidth && i < NUMBER_OF_PIXELS; i++)
-      {
-        pixels.setPixelColor(i, pixels.Color(
-                                    turnOnAnimation.HighlightAM,
-                                    turnOnAnimation.HighlightCW,
-                                    turnOnAnimation.HighlightWW));
-      }
-
-      // Send the updated pixel colors to the hardware.
-      pixels.show();
-    }
-    else
-    {
-      // Set the color
-      for (int i = 0; i < NUMBER_OF_PIXELS; i++)
-      {
-        pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
-      }
-      // Send the updated pixel colors to the hardware.
-      pixels.show();
-      set_state(TurnedOn);
-    }
+    TurnOnAnimation_Loop();
   }
   else if (state == TurningOff)
   {
-    // Turn off
+    TurnOffAnimation_Loop();
+  }
+}
+
+void TurnOnAnimation_Loop()
+{
+  unsigned long currentTime = millis();
+  unsigned long timeSinceStart = currentTime - stateStartTime;
+  if (timeSinceStart < turnOnAnimation.AnimationTimeMs)
+  {
+    // Do the turn on animation
+    float ratio = timeSinceStart / turnOnAnimation.AnimationTimeMs;
+    int pixelsTurnedOn = NUMBER_OF_PIXELS * ratio;
+
+    //Sets the first leds to the wanted AM, CW, WW color
+    for (int i = 0; i < pixelsTurnedOn && i < NUMBER_OF_PIXELS; i++)
+    {
+      pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
+    }
+
+    // Sets the highlight colors infront of the normal wanted colors
+    for (int i = pixelsTurnedOn; i < pixelsTurnedOn + turnOnAnimation.HighlightWidth && i < NUMBER_OF_PIXELS; i++)
+    {
+      pixels.setPixelColor(i, pixels.Color(
+                                  turnOnAnimation.HighlightAM,
+                                  turnOnAnimation.HighlightCW,
+                                  turnOnAnimation.HighlightWW));
+    }
+
+    // Send the updated pixel colors to the hardware.
+    pixels.show();
+  }
+  else
+  {
+    // The turn on animation is done, just set all the leds to the same colour
+    for (int i = 0; i < NUMBER_OF_PIXELS; i++)
+    {
+      pixels.setPixelColor(i, pixels.Color(AM, CW, WW));
+    }
+    // Send the updated pixel colors to the hardware.
+    pixels.show();
+    set_state(TurnedOn);
+  }
+}
+
+void TurnOffAnimation_Loop()
+{
+
+  unsigned long currentTime = millis();
+  unsigned long timeSinceStart = currentTime - stateStartTime;
+  if (timeSinceStart < turnOffAnimation.AnimationTimeMs)
+  {
+    // Do the turn on animation
+    float ratio = timeSinceStart / turnOnAnimation.AnimationTimeMs;
+    int pixelsTurnedOff = NUMBER_OF_PIXELS * ratio / 2;
+    int halfPoint = NUMBER_OF_PIXELS / 2;
+
+    // Turn on from the middle and out
+
+    // Upper half
+    for (int i = halfPoint; i < halfPoint + pixelsTurnedOff && i < NUMBER_OF_PIXELS; i++)
+    {
+      pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+    }
+
+    // Lower half
+    for (int i = halfPoint; i > halfPoint - pixelsTurnedOff && i >= 0; i--)
+    {
+      pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+    }
+
+    // Send the updated pixel colors to the hardware.
+    pixels.show();
+  }
+  else
+  {
+
     for (int i = 0; i < NUMBER_OF_PIXELS; i++)
     {
       pixels.setPixelColor(i, pixels.Color(0, 0, 0));
