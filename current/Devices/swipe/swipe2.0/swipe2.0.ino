@@ -58,6 +58,7 @@ Distributed as-is; no warranty is given.
  AutoHome autohome;
 // Pins
 #define APDS9960_INT    14 // Needs to be an interrupt pin
+#define LED 2
 
 // Constants
 
@@ -81,6 +82,8 @@ void setup() {
 
   // Set interrupt pin as input
   pinMode(APDS9960_INT, INPUT);
+  pinMode(LED,OUTPUT);
+  digitalWrite(LED,HIGH);
 
   // Initialize Serial port
   Serial.begin(9600);
@@ -123,6 +126,7 @@ void loop() {
   if(  isr_flag == 1  )
 //  if( APDS9960_INT == 1 )
    {
+  digitalWrite(LED,LOW);
 //    isr_flag = 1; 
     detachInterrupt(APDS9960_INT);
     handleGesture();
@@ -130,6 +134,7 @@ void loop() {
     delay(10);
     attachInterrupt(APDS9960_INT, interruptRoutine, FALLING);
     Serial.println("ding");
+  digitalWrite(LED, HIGH);
   }
 }
 
