@@ -1,5 +1,7 @@
 /* This example is a simple setup example to show you how to setup the AutoHome library. */
 
+#define MQTT_VERSION MQTT_VERSION_3_1
+
 #include <AutoHome.h>
 #include <Adafruit_NeoPixel.h>
 
