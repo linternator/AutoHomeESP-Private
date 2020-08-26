@@ -26,57 +26,57 @@ int Zold;
 
 void setup_bno055()
 {
-    Serial.println("Init the sensor...");
+  Serial.println("Init the sensor...");
 
-    // Ensures the sensor have had time to boot
-    unsigned long timeSinceStartMs = millis();
-    if (timeSinceStartMs < bno055_boot_time)
-    {
-        // Sensor needs a little time to start before it can be setup
-        Serial.println("Waits " + String(bno055_boot_time - timeSinceStartMs) + "ms for the sensor to boot....");
-        delay(bno055_boot_time - timeSinceStartMs);
-    }
+  // Ensures the sensor have had time to boot
+  unsigned long timeSinceStartMs = millis();
+  if (timeSinceStartMs < bno055_boot_time)
+  {
+    // Sensor needs a little time to start before it can be setup
+    Serial.println("Waits " + String(bno055_boot_time - timeSinceStartMs) + "ms for the sensor to boot....");
+    delay(bno055_boot_time - timeSinceStartMs);
+  }
 
-    //Initialize I2C communication
-    Wire.begin(5, 4);
+  //Initialize I2C communication
+  Wire.begin(5, 4);
 
-    //Initialization of the BNO055
-    BNO_Init(&myBNO); //Assigning the structure to hold information about the device
+  //Initialization of the BNO055
+  BNO_Init(&myBNO); //Assigning the structure to hold information about the device
 
-    //Configuration to NDoF mode
-    bno055_set_operation_mode(OPERATION_MODE_NDOF);
+  //Configuration to NDoF mode
+  bno055_set_operation_mode(OPERATION_MODE_NDOF);
 
-    delay(1);
+  delay(1);
 
-    Serial.println("Sensor have been initialized");
+  Serial.println("Sensor have been initialized");
 }
 
 void setup_screen()
 {
-    Serial.println("Init the screen...");
-    // Initialising the UI will init the display too.
-    display.init();
+  Serial.println("Init the screen...");
+  // Initialising the UI will init the display too.
+  display.init();
 
-    //display.flipScreenVertically();
-    display.setFont(ArialMT_Plain_10);
+  //display.flipScreenVertically();
+  display.setFont(ArialMT_Plain_10);
 
-    Serial.println("Screen have been initialized");
+  Serial.println("Screen have been initialized");
 }
 
 
 /* This function will be called every time a packet is received from the mqtt topic. */
 /* This is registered in the setup() */
-void mqtt_callback(char* topic, byte* payload, unsigned int length){
+void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
-  if(!autohome.mqtt_callback(topic, payload, length)){
+  if (!autohome.mqtt_callback(topic, payload, length)) {
 
-      String packet = "";
+    String packet = "";
 
-      for (int i = 0; i < length; i++) {
-        packet = packet + (char)payload[i];
-      }
+    for (int i = 0; i < length; i++) {
+      packet = packet + (char)payload[i];
+    }
 
-      Serial.print(packet);
+    Serial.print(packet);
 
   }
 
@@ -85,47 +85,47 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length){
 
 void update_screen()
 {
-    // clear the display
-    display.clear();
+  // clear the display
+  display.clear();
 
-    //Convert to degrees
-    float heading = float(myEulerData.h) / 16.00; //yaw
-    float roll = float(myEulerData.r) / 16.00;
-    float pitch = float(myEulerData.p) / 16.00;
+  //Convert to degrees
+  float heading = float(myEulerData.h) / 16.00; //yaw
+  float roll = float(myEulerData.r) / 16.00;
+  float pitch = float(myEulerData.p) / 16.00;
 
-    // Draws on the display
-    display.setTextAlignment(TEXT_ALIGN_LEFT);
-    display.setFont(ArialMT_Plain_10);
+  // Draws on the display
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  display.setFont(ArialMT_Plain_10);
   //  display.drawString(5, 0, "Time Stamp: " + String(millis()));
-    display.drawString(5, 15, "Heading(Yaw): " + String(heading));
-    display.drawString(5, 30, "Roll: " + String(roll));
-    display.drawString(5, 45, "Pitch: " + String(pitch));
+  display.drawString(5, 15, "Heading(Yaw): " + String(heading));
+  display.drawString(5, 30, "Roll: " + String(roll));
+  display.drawString(5, 45, "Pitch: " + String(pitch));
 
-    // write the buffer to the display
-    display.display();
+  // write the buffer to the display
+  display.display();
 }
 
 void read_sensor()
 {
-    //Update Euler data into the structure
-    bno055_read_euler_hrp(&myEulerData);
+  //Update Euler data into the structure
+  bno055_read_euler_hrp(&myEulerData);
 }
 
 void write_sensor_to_serial()
 {
-    Serial.print("Time Stamp: ");
-    Serial.println(lastTime);
+  Serial.print("Time Stamp: ");
+  Serial.println(lastTime);
 
-    Serial.print("Heading(Yaw): ");               //To read out the Heading (Yaw)
-    Serial.println(float(myEulerData.h) / 16.00); //Convert to degrees
+  Serial.print("Heading(Yaw): ");               //To read out the Heading (Yaw)
+  Serial.println(float(myEulerData.h) / 16.00); //Convert to degrees
 
-    Serial.print("Roll: ");                       //To read out the Roll
-    Serial.println(float(myEulerData.r) / 16.00); //Convert to degrees
+  Serial.print("Roll: ");                       //To read out the Roll
+  Serial.println(float(myEulerData.r) / 16.00); //Convert to degrees
 
-    Serial.print("Pitch: ");                      //To read out the Pitch
-    Serial.println(float(myEulerData.p) / 16.00); //Convert to degrees
+  Serial.print("Pitch: ");                      //To read out the Pitch
+  Serial.println(float(myEulerData.p) / 16.00); //Convert to degrees
 
-    Serial.println(); //Extra line to differentiate between packets
+  Serial.println(); //Extra line to differentiate between packets
 }
 
 
@@ -139,8 +139,8 @@ void setup() {
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
   autohome.begin();
-      setup_screen();
-    setup_bno055();
+  setup_screen();
+  setup_bno055();
 
 }
 
@@ -148,45 +148,69 @@ void loop() {
 
   /* This needs to be called in the loop as it handels the reconection to the mqtt server if it disconnects*/
   autohome.loop();
-    if ((millis() - lastTime) >= 16)
+  if ((millis() - lastTime) >= 16)
+  {
+    lastTime = millis();
+    read_sensor();
+    update_screen();
+  }
+
+  if ((millis() - lastTime_serial) >= 25)
+  {
+    lastTime_serial = millis();
+    write_sensor_to_serial();
+    float a = float(myEulerData.h) / 16.00;
+    int b = round(a);  // 3
+
+
+    float c = float(myEulerData.r) / 16.00;
+    int d = round(c);  // 3
+
+
+    float rawPitch = float(myEulerData.p) / 16.00;
+    int pitch = round(rawPitch);  
+
+    bool isWithinValidRange = false;
+    int mqttPitch = -1;
+    if (pitch < 90 && pitch > 45)
     {
-        lastTime = millis();
-        read_sensor();
-        update_screen();
+      mqttPitch = 0;
+      isWithinValidRange = true;
+    }
+    else if (pitch > 90)
+    {
+      mqttPitch = pitch - 90;
+      mqttPitch = map(mqttPitch, 0, 180, 0, 255);
+      isWithinValidRange = true;
+    }
+    else if (pitch < -90)
+    {
+      mqttPitch = pitch + 270;
+      mqttPitch = map(mqttPitch, 90, 180, 128, 255);
+      isWithinValidRange = true;
+    }
+    else if (pitch > -90 && pitch < -45)
+    {
+      mqttPitch = 255;
+      isWithinValidRange = true;
     }
 
-    if ((millis() - lastTime_serial) >= 100)
+    // send auto home packet
+    if (mqttPitch != Zold && isWithinValidRange)
     {
-        lastTime_serial = millis();
-        write_sensor_to_serial();
-        float a = float(myEulerData.h) / 16.00;
-        int b = round(a);  // 3
+      String packet = "Z:IS:" + String(mqttPitch);
+      autohome.sendPacket( packet.c_str() );
+    }
+
+    Zold = mqttPitch;
+  }
 
 
-        float c = float(myEulerData.r) / 16.00;
-        int d = round(c);  // 3
 
-
-        float e = float(myEulerData.p) / 16.00;
-        int f = round(e);  // 3
-
-        if(f != Zold)
-          {
-            // send auto home packet
-            int Znew = map(f, -180, 180, 0, 255);
-            String packet = "Z:IS:" + String(Znew);
-            autohome.sendPacket( packet.c_str() );
-            Zold = f;
-          }
-          
-
-
-   //     String packet = "Pitch:" + String(x);
-   //       autohome.sendPacket( round( float(myEulerData.h) / 16.00 ) + "," + round( float(myEulerData.h) / 16.00 ) + "," + round( float(myEulerData.h) / 16.00 ) );
+  //     String packet = "Pitch:" + String(x);
+  //       autohome.sendPacket( round( float(myEulerData.h) / 16.00 ) + "," + round( float(myEulerData.h) / 16.00 ) + "," + round( float(myEulerData.h) / 16.00 ) );
 
   //       String packet = "XYZ:IS:" + String(b) + "," + String(d) + "," + String(f);
   //        autohome.sendPacket( packet.c_str() );
-          
-    }
 
 }
