@@ -155,7 +155,7 @@ void loop() {
         update_screen();
     }
 
-    if ((millis() - lastTime_serial) >= 200)
+    if ((millis() - lastTime_serial) >= 100)
     {
         lastTime_serial = millis();
         write_sensor_to_serial();
@@ -170,12 +170,13 @@ void loop() {
         float e = float(myEulerData.p) / 16.00;
         int f = round(e);  // 3
 
-        if(b != Xold)
+        if(f != Zold)
           {
             // send auto home packet
-            String packet = "X:IS:" + String(b);
+            int Znew = map(f, -180, 180, 0, 255);
+            String packet = "Z:IS:" + String(Znew);
             autohome.sendPacket( packet.c_str() );
-            Xold = b;
+            Zold = f;
           }
           
 
