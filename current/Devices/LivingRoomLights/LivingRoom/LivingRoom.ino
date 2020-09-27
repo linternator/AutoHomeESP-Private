@@ -9,10 +9,14 @@ FASTLED_USING_NAMESPACE
 #warning "Requires FastLED 3.1 or later; check github for latest code."
 #endif
 
-#define DATA_PIN_STRIP1 12
-#define DATA_PIN_STRIP2 14
-#define DATA_PIN_STRIP3 27
-#define DATA_PIN_STRIP4 26
+// Pin to turn the lights on/off
+#define ON_OFF_SWITCH_PIN 4
+
+// LED strip pins
+#define LED_STRIP_1_PIN 12
+#define LED_STRIP_2_PIN 14
+#define LED_STRIP_3_PIN 27
+#define LED_STRIP_4_PIN 26
 #define LED_TYPE WS2811
 #define COLOR_ORDER GRB
 #define NUM_LEDS 179
@@ -29,13 +33,16 @@ void setup()
   delay(500);
 
   // tell FastLED about the LED strip configuration
-  FastLED.addLeds<LED_TYPE, DATA_PIN_STRIP1, COLOR_ORDER>(ledstrip1, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<LED_TYPE, DATA_PIN_STRIP2, COLOR_ORDER>(ledstrip2, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<LED_TYPE, DATA_PIN_STRIP3, COLOR_ORDER>(ledstrip3, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<LED_TYPE, DATA_PIN_STRIP4, COLOR_ORDER>(ledstrip4, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, LED_STRIP_1_PIN, COLOR_ORDER>(ledstrip1, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, LED_STRIP_2_PIN, COLOR_ORDER>(ledstrip2, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, LED_STRIP_3_PIN, COLOR_ORDER>(ledstrip3, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, LED_STRIP_4_PIN, COLOR_ORDER>(ledstrip4, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   // set master brightness control
   FastLED.setBrightness(BRIGHTNESS);
+
+  // On/Off button
+  pinMode(ON_OFF_SWITCH_PIN, INPUT_PULLUP);
 }
 
 uint8_t time_counter = 0; // rotating "base color" used by many of the patterns
@@ -47,8 +54,17 @@ void loop()
   //experiment(ledstrip2, CRGB(0,255,150));
   //experiment(ledstrip3, CRGB(50,90,100));
   //experiment(ledstrip4, CRGB(0,135,50));
+  if (digitalRead(ON_OFF_SWITCH_PIN) == LOW)
+  {
+    rainbow(time_counter);
+  }
+  else{
+    SetColor(ledstrip1, CRGB::Black);
+    SetColor(ledstrip2, CRGB::Black);
+    SetColor(ledstrip3, CRGB::Black);
+    SetColor(ledstrip4, CRGB::Black);
+  }
   
-  rainbow(time_counter);
   
   // send the 'leds' array out to the actual LED strip
   FastLED.show();
