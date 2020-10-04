@@ -4,6 +4,8 @@
 
 #include <FastLED.h>
 
+#include <AutoHome.h>
+
 FASTLED_USING_NAMESPACE
 #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
 #warning "Requires FastLED 3.1 or later; check github for latest code."
@@ -19,18 +21,39 @@ FASTLED_USING_NAMESPACE
 #define LED_STRIP_4_PIN 26
 #define LED_TYPE WS2811
 #define COLOR_ORDER GRB
-#define NUM_LEDS 179
+#define NUM_LEDS 180
 CRGB ledstrip1[NUM_LEDS];
 CRGB ledstrip2[NUM_LEDS];
 CRGB ledstrip3[NUM_LEDS];
 CRGB ledstrip4[NUM_LEDS];
 
 #define BRIGHTNESS 255
-#define FRAMES_PER_SECOND 120
+#define FRAMES_PER_SECOND 20
+
+AutoHome autohome;
+
+/* This function will be called every time a packet is received from the mqtt topic. */
+/* This is registered in the setup() */
+void mqtt_callback(char *topic, byte *payload, unsigned int length)
+{
+  Serial.print("Message arrived [");
+  if (!autohome.mqtt_callback(topic, payload, length))
+  {
+    String packet = "";
+    for (int i = 0; i < length; i++)
+    {
+      packet = packet + (char)payload[i];
+    }
+    Serial.print(packet);
+  }
+  Serial.println("]");
+}
 
 void setup()
 {
   delay(500);
+
+  Serial.begin(115200);
 
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE, LED_STRIP_1_PIN, COLOR_ORDER>(ledstrip1, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -43,36 +66,46 @@ void setup()
 
   // On/Off button
   pinMode(ON_OFF_SWITCH_PIN, INPUT_PULLUP);
+
+  /* This registers the function that gets called when a packet is recieved. */
+  autohome.setPacketHandler(mqtt_callback);
+
+  /* This starts the library and connects the esp to the wifi and the mqtt broker */
+  autohome.begin();
 }
 
 uint8_t time_counter = 0; // rotating "base color" used by many of the patterns
+unsigned long last_update_time = 0;
 
 void loop()
 {
-  
-  //experiment(ledstrip1, CRGB(150,0,200));
-  //experiment(ledstrip2, CRGB(0,255,150));
-  //experiment(ledstrip3, CRGB(50,90,100));
-  //experiment(ledstrip4, CRGB(0,135,50));
-  if (digitalRead(ON_OFF_SWITCH_PIN) == LOW)
-  {
-    rainbow(time_counter);
-  }
-  else{
-    SetColor(ledstrip1, CRGB::Black);
-    SetColor(ledstrip2, CRGB::Black);
-    SetColor(ledstrip3, CRGB::Black);
-    SetColor(ledstrip4, CRGB::Black);
-  }
-  
-  
-  // send the 'leds' array out to the actual LED strip
-  FastLED.show();
-  // insert a delay to keep the framerate modest
-  FastLED.delay(1000 / FRAMES_PER_SECOND);
+  autohome.loop();
+  unsigned long current_time = millis();
 
-  // do some periodic updates
-  EVERY_N_MILLISECONDS(20) { time_counter += 10; } // slowly cycle the "base color" through the rainbow
+  if(abs(last_update_time - current_time) > 1000 / FRAMES_PER_SECOND)
+  {
+    last_update_time = current_time;
+    time_counter += 1;
+    if (digitalRead(ON_OFF_SWITCH_PIN) == LOW)
+    {
+      rainbow(time_counter);
+      //CRGB color = CRGB(0x00,0x00,0xff);
+      //SetColor(ledstrip1, color);
+      //SetColor(ledstrip2, color);
+      //SetColor(ledstrip3, color);
+      //SetColor(ledstrip4, color);
+    }
+    else
+    {
+      SetColor(ledstrip1, CRGB::Black);
+      SetColor(ledstrip2, CRGB::Black);
+      SetColor(ledstrip3, CRGB::Black);
+      SetColor(ledstrip4, CRGB::Black);
+    }
+
+    // send the 'leds' array out to the actual LED strip
+    FastLED.show();
+  }
 }
 
 void rainbow(uint8_t value)
@@ -84,7 +117,7 @@ void rainbow(uint8_t value)
   fill_rainbow(ledstrip4, NUM_LEDS, value + 192, 7);
 }
 
-void SetColor(struct CRGB * leds, const struct CRGB& color)
+void SetColor(struct CRGB *leds, const struct CRGB &color)
 {
   for (int i = 0; i < NUM_LEDS; i++)
   {

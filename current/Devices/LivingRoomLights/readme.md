@@ -16,3 +16,10 @@ Strip 1: 12
 Strip 2: 14
 Strip 3: 27
 Strip 4: 26
+
+
+## Todo
+
+- [ ] Fix library so the ESP does not become unusable when WIFI drops
+- [ ] Use library to make it easy to do Over-the-Air-Updates
+- [ ] Implement different TurnOn/TurnOff animations
