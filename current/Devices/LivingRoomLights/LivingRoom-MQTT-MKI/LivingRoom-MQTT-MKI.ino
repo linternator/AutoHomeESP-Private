@@ -27,7 +27,7 @@ CRGB ledstrip3[NUM_LEDS];
 CRGB ledstrip4[NUM_LEDS];
 
 // #define BRIGHTNESS 255
-int BRIGHTNESS = 255;
+volatile int BRIGHTNESS = 255;
 #define FRAMES_PER_SECOND 20
 
 AutoHome autohome;
@@ -50,8 +50,9 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
 
  if (autohome.getValue(packet, ':', 0).equals("Brightness"))
   {
-    BRIGHTNESS = autohome.getValue(packet, ',', 1).toInt();
+    BRIGHTNESS = autohome.getValue(packet, ':', 1).toInt();
    FastLED.setBrightness(BRIGHTNESS);
+   mqtt_send_stats();
   }
 
  if (autohome.getValue(packet, ':', 0).equals("stat"))
@@ -62,6 +63,7 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
 // if (autohome.getValue(packet, ':', 0).equals("time_counter"))
 //  {
 //    time_counter = autohome.getValue(packet, ',', 1).toInt();
+//    mqtt_send_stats(); 
 //  }
 
 
