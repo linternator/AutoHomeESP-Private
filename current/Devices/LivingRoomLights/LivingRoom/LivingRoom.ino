@@ -165,11 +165,6 @@ void loop()
       SetColor(ledstrip2, CRGB::Black);
       SetColor(ledstrip3, CRGB::Black);
       SetColor(ledstrip4, CRGB::Black);
-      addGlitter(ledstrip1, 75);
-      addGlitter(ledstrip2, 75);
-      addGlitter(ledstrip3, 75);
-      addGlitter(ledstrip4, 75);
-
     }
 
     // send the 'leds' array out to the actual LED strip
