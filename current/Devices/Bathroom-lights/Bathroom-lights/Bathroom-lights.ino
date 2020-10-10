@@ -17,7 +17,7 @@
 #define NEO_PIXEL_PIN 13
 
 // Popular NeoPixel ring size
-#define NUMBER_OF_PIXELS 122
+#define NUMBER_OF_PIXELS 149
 
 enum LightState
 {
@@ -31,7 +31,7 @@ enum LightState
 struct TurnOnAnimation
 {
   // How long the turn on animation should be in ms
-  float AnimationTimeMs = 2000;
+  float AnimationTimeMs = 200;
 
   // How wide the highlight should be in number of Leds
   int HighlightWidth = 5;
