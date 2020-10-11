@@ -5,6 +5,12 @@
 #include <FastLED.h>
 #include <AutoHome.h>
 
+int Mode = 1;
+int rando = 0;
+int UseRando = 1;
+int State = 0;
+int NState = 0;
+
 FASTLED_USING_NAMESPACE
 #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
 #warning "Requires FastLED 3.1 or later; check github for latest code."
@@ -81,6 +87,18 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
       mqtt_send_stats();
     }
 
+    if (autohome.getValue(packet, ':', 0).equals("UseRando")) // 0 1, if lights use random animation
+    {
+      UseRando = autohome.getValue(packet, ':', 1).toInt();
+      mqtt_send_stats();
+    }
+
+    if (autohome.getValue(packet, ':', 0).equals("mode"))   // lighting mode
+    {
+      Mode = autohome.getValue(packet, ':', 1).toFloat();
+      mqtt_send_stats();
+    }
+    
     // if (autohome.getValue(packet, ':', 0).equals("time_counter"))
     //  {
     //    time_counter = autohome.getValue(packet, ',', 1).toInt();
@@ -109,7 +127,8 @@ void mqtt_send_stats()
                                        "RAINBOW_SCALE = " +
                   String(RAINBOW_SCALE) + ", "
                                           "switch stat = " +
-                  (digitalRead(ON_OFF_SWITCH_PIN)) + "";
+                  (digitalRead(ON_OFF_SWITCH_PIN)) + ", "
+                  + "Mode = " + String(Mode) + "";
   autohome.sendPacket(packet.c_str());
 }
 
@@ -146,18 +165,57 @@ void loop()
   autohome.loop();
   unsigned long current_time = millis();
 
-  if (abs(last_update_time - current_time) > 1000 / FRAMES_PER_SECOND)
+  if((State == 1) & (NState == 0) && (UseRando == 1))  // only triguer once on lights turning on.
+    {
+      NState = 1;
+      Mode = random(1,4);      // select a random number between 1 and 3, to pick a rnadom animation on power on.
+    }
+
+  if(State == 0)
+    {
+      NState = 0;
+    }
+
+
+      
+if (abs(last_update_time - current_time) > 1000 / FRAMES_PER_SECOND)
   {
     last_update_time = current_time;
     time_counter += 1;
+    
     if (digitalRead(ON_OFF_SWITCH_PIN) == LOW)
     {
-      rainbow(time_counter);
-      //CRGB color = CRGB(0x00,0x00,0xff);
-      //SetColor(ledstrip1, CRGB(0xFF,0x00,0x00));
-      //SetColor(ledstrip2, CRGB(0x00,0xFF,0x00));
-      //SetColor(ledstrip3, CRGB(0x00,0x00,0xFF));
-      //SetColor(ledstrip4, CRGB(0xFF,0xFF,0xFF));
+
+      switch(Mode)      // diffrent on animations.
+        {
+          case 1:
+            {
+              rainbow(time_counter);
+            } break;
+
+          case 2:
+            {
+              rainbow(time_counter);
+              addGlitter(ledstrip1, 75);
+              addGlitter(ledstrip2, 75);
+              addGlitter(ledstrip3, 75);
+              addGlitter(ledstrip4, 75);    
+            } break;
+
+         case 3:
+          {
+              CRGB color = CRGB(0x00,0x00,0xff);
+              SetColor(ledstrip1, CRGB(0xFF,0x00,0x00));
+              SetColor(ledstrip2, CRGB(0x00,0xFF,0x00));
+              SetColor(ledstrip3, CRGB(0x00,0x00,0xFF));
+              SetColor(ledstrip4, CRGB(0xFF,0xFF,0xFF));
+          } break;
+
+          
+        }
+
+
+      State = 1;
     }
     else
     {
@@ -165,6 +223,8 @@ void loop()
       SetColor(ledstrip2, CRGB::Black);
       SetColor(ledstrip3, CRGB::Black);
       SetColor(ledstrip4, CRGB::Black);
+
+      State = 0;
     }
 
     // send the 'leds' array out to the actual LED strip
