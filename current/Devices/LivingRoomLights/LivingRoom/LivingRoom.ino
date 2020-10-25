@@ -168,7 +168,7 @@ void loop()
   if((State == 1) & (NState == 0) && (UseRando == 1))  // only triguer once on lights turning on.
     {
       NState = 1;
-      Mode = random(1,4);      // select a random number between 1 and 3, to pick a rnadom animation on power on.
+      Mode = random(1,5);      // select a random number between 1 and 3, to pick a rnadom animation on power on.
     }
 
   if(State == 0)
@@ -211,6 +211,14 @@ if (abs(last_update_time - current_time) > 1000 / FRAMES_PER_SECOND)
               SetColor(ledstrip4, CRGB(0xFF,0xFF,0xFF));
           } break;
 
+        case 4:   // the random case. 
+          {
+            Rando(ledstrip1);
+            Rando(ledstrip2);
+            Rando(ledstrip3);
+            Rando(ledstrip4);
+          } break;
+
           
         }
 
@@ -223,6 +231,8 @@ if (abs(last_update_time - current_time) > 1000 / FRAMES_PER_SECOND)
       SetColor(ledstrip2, CRGB::Black);
       SetColor(ledstrip3, CRGB::Black);
       SetColor(ledstrip4, CRGB::Black);
+
+      FastLED.clear(); // clear buffer to make MY random animaiton work better. 
 
       State = 0;
     }
@@ -258,11 +268,21 @@ void fill_my_rainbow(struct CRGB *leds, unsigned long time_counter, int offset)
   }
 }
 
-//glitter effect
+//glitter effect  (addGlitter(ledstrip1, 75);)
 void addGlitter(struct CRGB *leds, fract8 chanceOfGlitter)
 {
   if (random8() < chanceOfGlitter)
   {
     leds[random16(NUM_LEDS)] += CRGB::White;
   }
+}
+
+// Lions Random Mode
+void Rando(struct CRGB *leds)
+{
+  int Strippy = random(0,4);    // prick a random strip to pester
+  int i = random(0, NUM_LEDS); 
+
+leds[i] = CRGB( random(0,255), random(0,255), random(0,255));
+
 }
