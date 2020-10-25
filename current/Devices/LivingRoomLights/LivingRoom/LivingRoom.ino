@@ -35,6 +35,9 @@ CRGB ledstrip4[NUM_LEDS];
 // #define BRIGHTNESS 255
 volatile int BRIGHTNESS = 255;
 volatile int SATURATION = 255;
+volatile int STATIC_RED = 255;
+volatile int STATIC_GREEN = 0;
+volatile int STATIC_BLUE = 255;
 volatile float RAINBOW_SCALE = 0.5;
 volatile float RAINBOW_SPEED = 1;
 #define FRAMES_PER_SECOND 20
@@ -79,6 +82,14 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
     if (autohome.getValue(packet, ':', 0).equals("RAINBOW_SPEED"))
     {
       RAINBOW_SPEED = autohome.getValue(packet, ':', 1).toFloat();
+      mqtt_send_stats();
+    }
+
+    if (autohome.getValue(packet, ':', 0).equals("RGB"))
+    {
+      STATIC_RED = autohome.getValue(packet, ':', 1).toInt();
+      STATIC_GREEN = autohome.getValue(packet, ':', 2).toInt();
+      STATIC_BLUE = autohome.getValue(packet, ':', 3).toInt();
       mqtt_send_stats();
     }
 
@@ -204,11 +215,12 @@ if (abs(last_update_time - current_time) > 1000 / FRAMES_PER_SECOND)
 
          case 3:
           {
-              CRGB color = CRGB(0x00,0x00,0xff);
-              SetColor(ledstrip1, CRGB(0xFF,0x00,0x00));
-              SetColor(ledstrip2, CRGB(0x00,0xFF,0x00));
-              SetColor(ledstrip3, CRGB(0x00,0x00,0xFF));
-              SetColor(ledstrip4, CRGB(0xFF,0xFF,0xFF));
+
+              CRGB color = CRGB(STATIC_RED, STATIC_GREEN, STATIC_BLUE);
+              SetColor(ledstrip1, color);
+              SetColor(ledstrip2, color);
+              SetColor(ledstrip3, color);
+              SetColor(ledstrip4, color);
           } break;
 
         case 4:   // the random case. 
