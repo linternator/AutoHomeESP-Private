@@ -73,3 +73,86 @@ void loop() {
       Serial.println(i);
       }
 }
+
+
+void DialAdress(int A, int B, int C, int D, int E, int F, int G,    int H,    int I)    // consider passing in an array.
+{
+  char system = M;  // M = milky way, 7. G = galaxy = 8. D = Destiny = 9.
+  
+//  if(I != 0)
+//  {
+//    // all 9 chevrons used.   // destiny
+//    system = D;
+//  }
+//    else
+//      {
+//        if( H != 0)         // sort out if statments. 
+//          {
+//            system = G;
+//          }
+//        else 
+//          {
+//            system = M;
+//          }
+//      }
+
+int i = 1;
+int Dir = 1;
+int Target =1;
+
+array Adress[A,B,C,D,E,F,G,H,I];
+
+
+if(Adress[i] != 0)    // if theres no more symbols entered.
+{
+
+// turn on shevron sides A
+pixels.setPixelColor((ChveronsLocks[( Adress[i] )] -1 ), pixels.Color(255,255,255));
+pixels.setPixelColor((ChveronsLocks[( Adress[i] )] +1 ), pixels.Color(255,255,255));
+
+if( Dir == 1) // swich direction after each syboml is found and locked in. 
+  {
+    for(int X; X == A; X++)    // find symbol // convert to non blocking.   // clockwise.
+      {
+          pixels.setPixelColor(Symbols[X-1], pixels.Color(0,0,0));  // turn of last symbol
+          pixels.setPixelColor(Symbols[X], pixels.Color(0,0,255));  // turn on symbol
+      }
+    Dir = 0
+  }
+    else
+      {
+        for(int X = 36; X == A; X--)    // find symbol // convert to non blocking.  // anti cockwise. 
+          {
+              pixels.setPixelColor(Symbols[X-1], pixels.Color(0,0,0));  // turn of last symbol
+              pixels.setPixelColor(Symbols[X], pixels.Color(0,0,255));  // turn on symbol
+          }
+    Dir = 1;
+      }
+
+pixels.setPixelColor(ChveronsLocks[ Adress[i] ], pixels.Color(255,255,255));  // activeate shevron
+
+pixels.setPixelColor((ChveronsLocks[( Adress[i] )] -1 ), pixels.Color(0,0,0));    // turn of side shevrons. 
+pixels.setPixelColor((ChveronsLocks[( Adress[i] )] +1 ), pixels.Color(0,0,0));
+
+i++;    // next adress
+}
+
+
+
+
+// loop
+  
+ // light sides 1
+ // dial clockwise till A reached. 
+ // lock chevoron 1
+ // un light sides 1
+
+ // light sides 2
+ // dial anti clockwise till B reached.
+ // lock Chevron 2
+ // un light sides 2
+
+ // loop
+
+  
+}
