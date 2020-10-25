@@ -295,6 +295,6 @@ void Rando(struct CRGB *leds)
   int Strippy = random(0,4);    // prick a random strip to pester
   int i = random(0, NUM_LEDS); 
 
-leds[i] = CRGB( random(0,255), random(0,255), random(0,255));
+leds[i] = CRGB( random(0,STATIC_RED), random(0,STATIC_GREEN), random(0,STATIC_BLUE));
 
 }
