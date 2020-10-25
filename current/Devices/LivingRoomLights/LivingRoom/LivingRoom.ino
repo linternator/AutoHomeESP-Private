@@ -32,15 +32,12 @@ CRGB ledstrip2[NUM_LEDS];
 CRGB ledstrip3[NUM_LEDS];
 CRGB ledstrip4[NUM_LEDS];
 
-// #define BRIGHTNESS 255
-volatile int BRIGHTNESS = 255;
+volatile int BRIGHTNESS = 100;
 volatile int SATURATION = 255;
-volatile int STATIC_RED = 255;
-volatile int STATIC_GREEN = 0;
-volatile int STATIC_BLUE = 255;
-volatile float RAINBOW_SCALE = 0.5;
-volatile float RAINBOW_SPEED = 1;
-#define FRAMES_PER_SECOND 20
+volatile int HUE = 0;
+volatile float RAINBOW_SCALE = 0.01;
+volatile float RAINBOW_SPEED = 0.2;
+#define FRAMES_PER_SECOND 120
 
 AutoHome autohome;
 
@@ -73,6 +70,12 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
       mqtt_send_stats();
     }
 
+    if (autohome.getValue(packet, ':', 0).equals("HUE"))
+    {
+      HUE = autohome.getValue(packet, ':', 1).toInt();
+      mqtt_send_stats();
+    }
+
     if (autohome.getValue(packet, ':', 0).equals("RAINBOW_SCALE"))
     {
       RAINBOW_SCALE = autohome.getValue(packet, ':', 1).toFloat();
@@ -82,14 +85,6 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
     if (autohome.getValue(packet, ':', 0).equals("RAINBOW_SPEED"))
     {
       RAINBOW_SPEED = autohome.getValue(packet, ':', 1).toFloat();
-      mqtt_send_stats();
-    }
-
-    if (autohome.getValue(packet, ':', 0).equals("RGB"))
-    {
-      STATIC_RED = autohome.getValue(packet, ':', 1).toInt();
-      STATIC_GREEN = autohome.getValue(packet, ':', 2).toInt();
-      STATIC_BLUE = autohome.getValue(packet, ':', 3).toInt();
       mqtt_send_stats();
     }
 
@@ -216,7 +211,7 @@ if (abs(last_update_time - current_time) > 1000 / FRAMES_PER_SECOND)
          case 3:
           {
 
-              CRGB color = CRGB(STATIC_RED, STATIC_GREEN, STATIC_BLUE);
+              CHSV color = CHSV(HUE, SATURATION, BRIGHTNESS);
               SetColor(ledstrip1, color);
               SetColor(ledstrip2, color);
               SetColor(ledstrip3, color);
@@ -262,7 +257,7 @@ void rainbow(unsigned long time_counter)
   fill_my_rainbow(ledstrip4, time_counter, 192);
 }
 
-void SetColor(struct CRGB *leds, const struct CRGB &color)
+void SetColor(struct CRGB *leds, const struct CHSV &color)
 {
   for (int i = 0; i < NUM_LEDS; i++)
   {
@@ -295,6 +290,6 @@ void Rando(struct CRGB *leds)
   int Strippy = random(0,4);    // prick a random strip to pester
   int i = random(0, NUM_LEDS); 
 
-leds[i] = CRGB( random(0,STATIC_RED), random(0,STATIC_GREEN), random(0,STATIC_BLUE));
+  leds[i] = CHSV(random(0, 255), SATURATION, random(0, BRIGHTNESS));
 
 }
