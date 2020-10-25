@@ -35,6 +35,8 @@ CRGB ledstrip4[NUM_LEDS];
 volatile int BRIGHTNESS = 100;
 volatile int SATURATION = 255;
 volatile int HUE = 0;
+volatile float SPREAD = 0.1;
+
 volatile float RAINBOW_SCALE = 0.01;
 volatile float RAINBOW_SPEED = 0.2;
 #define FRAMES_PER_SECOND 120
@@ -75,6 +77,13 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
       HUE = autohome.getValue(packet, ':', 1).toInt();
       mqtt_send_stats();
     }
+
+    if (autohome.getValue(packet, ':', 0).equals("SPREAD"))
+    {
+      SPREAD = autohome.getValue(packet, ':', 1).toFloat();
+      mqtt_send_stats();
+    }
+
 
     if (autohome.getValue(packet, ':', 0).equals("RAINBOW_SCALE"))
     {
@@ -234,10 +243,10 @@ if (abs(last_update_time - current_time) > 1000 / FRAMES_PER_SECOND)
     }
     else
     {
-      SetColor(ledstrip1, CRGB::Black);
-      SetColor(ledstrip2, CRGB::Black);
-      SetColor(ledstrip3, CRGB::Black);
-      SetColor(ledstrip4, CRGB::Black);
+      SetColor(ledstrip1, CHSV(0, 0, 0));
+      SetColor(ledstrip2, CHSV(0, 0, 0));
+      SetColor(ledstrip3, CHSV(0, 0, 0));
+      SetColor(ledstrip4, CHSV(0, 0, 0));
 
       FastLED.clear(); // clear buffer to make MY random animaiton work better. 
 
@@ -289,7 +298,8 @@ void Rando(struct CRGB *leds)
 {
   int Strippy = random(0,4);    // prick a random strip to pester
   int i = random(0, NUM_LEDS); 
-
-  leds[i] = CHSV(random(0, 255), SATURATION, random(0, BRIGHTNESS));
+  
+  
+  leds[i] = CHSV(random(HUE - SPREAD * 128, HUE + SPREAD * 128), SATURATION, random(0, BRIGHTNESS));
 
 }
