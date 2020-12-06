@@ -10,7 +10,11 @@
 #define D8 (15)
 #define TX (1)
 
+#define relay 16
+
 #define BAUD_RATE 19200 // 57600
+
+ uint8_t coursSpeed = 0;
 
 SoftwareSerial VSerial;
 SoftwareSerial ASerial;
@@ -23,15 +27,23 @@ void setup()
   // adapter gets read before another write is performed.
   // Block writes with a size greater than 1 would usually fail. Do not copy this into your own project without
   // reading the documentation.
-  VSerial.begin(BAUD_RATE, SWSERIAL_8N1, 4, 5, false, 95, 11); // A // Voltage
-  ASerial.begin(BAUD_RATE, SWSERIAL_8N1, 5, 4, false, 95, 11); // B // Current
+  VSerial.begin(BAUD_RATE, SWSERIAL_8N1, 10, 9, false, 95, 11); // A // Voltage
+  ASerial.begin(BAUD_RATE, SWSERIAL_8N1, 5, 4, false, 95, 11); // B // Current  // fix pins, wrong pins :C 
 
   Serial.println(PSTR("\nSoftware serial test started"));
 }
 
 void loop()
 {
-  uint8_t coursSpeed = random(0, 255);
+//  uint8_t coursSpeed = random(0, 255);
+if(coursSpeed == 255)
+  {
+    coursSpeed = 0;
+  }
+  coursSpeed ++;
   ASerial.write(coursSpeed);
-  delay(2000);
+    Serial.println(coursSpeed);
+  VSerial.write(coursSpeed);
+
+  delay(500);
 }
