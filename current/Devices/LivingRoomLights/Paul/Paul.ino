@@ -153,6 +153,10 @@ void mqtt_send_stats()
 
 void setup()
 {
+  for (int i = 0; i < NUM_LEDS*4; i++)
+  {
+    heatstates[i] = random(1000)/1000.0;
+  }
   delay(500);
 
   Serial.begin(115200);
@@ -187,7 +191,7 @@ void loop()
   if((State == 1) & (NState == 0) && (UseRando == 1))  // only triguer once on lights turning on.
     {
       NState = 1;
-      Mode = random(1,5);      // select a random number between 1 and 3, to pick a rnadom animation on power on.
+      Mode = random(1,6);      // select a random number between 1 and 3, to pick a rnadom animation on power on.
     }
 
   if(State == 0)
