@@ -42,4 +42,39 @@ public:
             leds[random16(NUM_LEDS)] += CRGB::White;
         }
     }
+
+    void HandleMqttMessage(String packet)
+    {
+        String property = autohome.getValue(packet, MQTT_DELIMITER, 1);
+        String value = autohome.getValue(packet, MQTT_DELIMITER, 2);
+        if (property.equals("SATURATION"))
+        {
+            SATURATION = value.toInt();
+        }
+        else if (property.equals("HUE"))
+        {
+            HUE = value.toInt();
+        }
+        else if (property.equals("RAINBOW_SCALE"))
+        {
+            RAINBOW_SCALE = value.toFloat();
+        }
+        else if (property.equals("RAINBOW_SPEED"))
+        {
+            RAINBOW_SPEED = value.toFloat();
+        }
+        else if (property.equals("EnableGlitter"))
+        {
+            EnableGlitter = value == "1";
+        }
+    }
+
+    String ToMqttMessage()
+    {
+        return "SATURATION: " + String(SATURATION) +
+               ", HUE: " + String(HUE) +
+               ", RAINBOW_SCALE: " + String(RAINBOW_SCALE) +
+               ", RAINBOW_SPEED: " + String(RAINBOW_SPEED) +
+               ", EnableGlitter: " + String(EnableGlitter);
+    }
 };

@@ -22,4 +22,25 @@ public:
             leds[i] = color;
         }
     }
+
+    void HandleMqttMessage(String packet)
+    {
+        String property = autohome.getValue(packet, MQTT_DELIMITER, 1);
+        String value = autohome.getValue(packet, MQTT_DELIMITER, 2);
+
+        if (property.equals("SATURATION"))
+        {
+            SATURATION = value.toInt();
+        }
+        else if (property.equals("HUE"))
+        {
+            HUE = value.toInt();
+        }
+    }
+
+    String ToMqttMessage()
+    {
+        return "SATURATION: " + String(SATURATION) +
+               ", HUE: " + String(HUE);
+    }
 };

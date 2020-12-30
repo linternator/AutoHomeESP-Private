@@ -7,11 +7,11 @@ public:
     float current;
     float last;
 
-    void Initialize()
+    HeatBlobAnimation()
     {
         for (int i = 0; i < NUM_LEDS * 4; i++)
         {
-            heatstates[i] = random(1000) / 1000.0;
+            heatstates[i] = random(0, 1000) / 1000.0f;
         }
     }
 

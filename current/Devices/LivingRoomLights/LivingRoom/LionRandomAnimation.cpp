@@ -22,4 +22,31 @@ public:
         int i = random(0, NUM_LEDS);
         leds[i] = CHSV(random(HUE - SPREAD * 128, HUE + SPREAD * 128), SATURATION, random(0, brightness));
     }
+
+    void HandleMqttMessage(String packet)
+    {
+        String property = autohome.getValue(packet, MQTT_DELIMITER, 1);
+        String value = autohome.getValue(packet, MQTT_DELIMITER, 2);
+
+        if (property.equals("SATURATION"))
+        {
+            SATURATION = value.toInt();
+        }
+        else if (property.equals("HUE"))
+        {
+            HUE = value.toInt();
+        }
+        else if (property.equals("SPREAD"))
+        {
+            SPREAD = value.toFloat();
+        }
+    }
+
+    String ToMqttMessage()
+    {
+        String msg = "SATURATION: " + String(SATURATION) +
+                     ", HUE: " + String(HUE) +
+                     ", SPREAD: " + String(SPREAD);
+        return msg;
+    }
 };

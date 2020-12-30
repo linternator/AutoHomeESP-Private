@@ -6,6 +6,7 @@ FASTLED_USING_NAMESPACE
 #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
 #warning "Requires FastLED 3.1 or later; check github for latest code." + FASTLED_VERSION
 #endif
+#include <AutoHome.h>
 
 // Pin to turn the lights on/off
 #define ON_OFF_SWITCH_PIN 4
@@ -21,6 +22,12 @@ FASTLED_USING_NAMESPACE
 
 // Animation
 #define FRAMES_PER_SECOND 120
+
+// MQTT
+#define MQTT_DELIMITER ':'
+
+// Autohome
+extern AutoHome autohome;
 
 struct LivingRoomLeds
 {
@@ -47,8 +54,10 @@ struct LivingRoomLeds
 class BaseAnimation
 {
 public:
-    virtual void Initialize(){};
+    String Name = "<NotSet>";
     virtual void Update(LivingRoomLeds *leds){};
+    virtual void HandleMqttMessage(String packet){};
+    virtual String ToMqttMessage() { return ""; };
 };
 
 #endif
