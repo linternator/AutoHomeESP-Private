@@ -1,16 +1,30 @@
-// #include <AutoHome.h>
+#include <AutoHome.h>
 #include <Adafruit_NeoPixel.h>
 
-#define PIN 23; // pixel pushing pulsing pin
-#define HDD 22; // HDD flicker pin.
+#define PIN 2     // pixel pushing pulsing pin
+#define HDD 4     // HDD flicker pin.
+#define pw-led 16 // power on led pin
+#define pw-sw  17 // power on off button
 
-uint32_t m0de = 0 : uint32_t fadeTime = 25;
-uint32_t brightness = 200;
-uint32_t brightness_old = 200;
+// touch buttons
+#define on/off 13 // on off
 
-uint32_t colorR = 255;
-uint32_t colorG = 255;
-uint32_t colorB = 255;
+#define 0ff 12  // leds off touch button
+#define act 14  // normal hdd activity lighting
+
+#define FULL 27 // full on
+#define Fade 33 // smoothed hdd lighting
+#define Live 32 // heart beat
+
+
+int m0de = 1;
+int fadeTime = 25;
+int brightness = 200;
+int brightness_old = 200;
+
+int colorR = 255;
+int colorG = 255;
+int colorB = 255;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NumberOfPixels, PIN, NEO_GRB + NEO_KHZ800);
 
@@ -18,26 +32,91 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NumberOfPixels, PIN, NEO_GRB + NEO_K
 
 void setup()
 {
-
   Serial.begin(115200);
 
   strip.begin(); // Initialize neo pixel strip.
   strip.show();  // Initialize all pixels to 'off'
 
   pinMode(HDD, INPUT); // to read hdd pin
+  pinMode(pw-led, INPUT);
+  pinMode(pw-sw, OUTPUT); // SET defult stat to not turn off the server ? 
 
   /* This registers the function that gets called when a packet is recieved. */
-  // autohome.setPacketHandler(mqtt_callback);
+   autohome.setPacketHandler(mqtt_callback);    // do i need ? 
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
-  //  autohome.begin();
+    autohome.begin();
 }
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
+  strip.show();  // show updated pixels
+    autohome.loop();  // check for MQTT messages
 
-  //  autohome.loop();
+    touchValue = touchRead(touchPin); // reach touch buttons, returns analog value
+
+// consider putting this in a milis timed thing of fadeTime
+
+switch(m0de)
+  {
+    case 0: // turn LEDs off
+      {
+        brightness = brightness - 1;
+          strip.setBrightness(brightness);
+      } break;
+
+    case 1: // normal HDD activieyt flashing
+      {
+        brightness = 255
+        if( digitalRead(HDD) )
+          {
+            strip.Color(colorR, colorG, BcolorB);   // turn LEDS full on
+          }
+            else
+            {
+              strip.Color(0,0,0);                   // turn LEDS full off
+            }
+      } break;
+
+    case 2:   // full on couloru
+    {
+      // code
+    } break;
+
+
+    case 3: // HDD activty smooth
+    {
+      if( digitalRead(HDD))
+        {
+          if(brightness <= 255) // prevent over flow
+              {
+                brightness = brightness + 30; // 30 is the brightness jump it makes
+              }
+          
+        } 
+          else 
+          {
+            brightness = brightness -1   // fade down
+          }
+          
+    } break;
+
+    case 4: // live // heart beat
+    {
+      // code
+    } break;
+  }
+
+
+
+
+
+
+
+
+
+
+// old code 
 
   if (HDD == HIGH)
   {

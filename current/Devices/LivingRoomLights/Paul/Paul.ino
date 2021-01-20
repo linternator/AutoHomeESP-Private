@@ -4,6 +4,7 @@
 
 #include <FastLED.h>
 #include <AutoHome.h>
+#include <WiFiUdp.h>
 
 int Mode = 1;
 int rando = 0;
