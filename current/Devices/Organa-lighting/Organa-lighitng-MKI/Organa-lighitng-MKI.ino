@@ -3,19 +3,20 @@
 
 #define PIN 2     // pixel pushing pulsing pin
 #define HDD 4     // HDD flicker pin.
-#define pw-led 16 // power on led pin
-#define pw-sw  17 // power on off button
+#define pwLed 16 // power on led pin
+#define pwSw  17 // power on off button
 
 // touch buttons
-#define on/off 13 // on off
+#define OnOff 13 // on off
 
-#define 0ff 12  // leds off touch button
+#define ooff 12  // leds off touch button
 #define act 14  // normal hdd activity lighting
 
 #define FULL 27 // full on
 #define Fade 33 // smoothed hdd lighting
 #define Live 32 // heart beat
 
+#define NumberOfPixels 55
 
 int m0de = 1;
 int fadeTime = 25;
@@ -26,7 +27,7 @@ int colorR = 255;
 int colorG = 255;
 int colorB = 255;
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NumberOfPixels, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(NumberOfPixels, PIN, NEO_GRB + NEO_KHZ800);
 
 // AutoHome autohome;
 
@@ -38,26 +39,52 @@ void setup()
   strip.show();  // Initialize all pixels to 'off'
 
   pinMode(HDD, INPUT); // to read hdd pin
-  pinMode(pw-led, INPUT);
-  pinMode(pw-sw, OUTPUT); // SET defult stat to not turn off the server ? 
+  pinMode(pwLed, INPUT);
+  pinMode(pwSw, OUTPUT); // SET defult stat to not turn off the server ? 
 
   /* This registers the function that gets called when a packet is recieved. */
-   autohome.setPacketHandler(mqtt_callback);    // do i need ? 
+//   autohome.setPacketHandler(mqtt_callback);    // do i need ? 
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
-    autohome.begin();
+//    autohome.begin();
 }
 
 void loop()
 {
   strip.show();  // show updated pixels
-    autohome.loop();  // check for MQTT messages
+  //  autohome.loop();  // check for MQTT messages
 
-    touchValue = touchRead(touchPin); // reach touch buttons, returns analog value
+  // delay(1);  // service things like wifi
+
+//    touchValue = touchRead(touchPin); // reach touch buttons, returns analog value
+  if(touchRead(ooff) > 50 ) // touch button pushed. 
+  {
+    m0de = 0; // OFF
+  }
+
+  if(touchRead(act) > 50 ) // touch button pushed. 
+  {
+    m0de = 1; // activity
+  }
+
+  if(touchRead(FULL) > 50 ) // touch button pushed. 
+  {
+    m0de = 2; // full on
+  }
+
+  if(touchRead(Fade) > 50 ) // touch button pushed. 
+  {
+    m0de = 3; // fade
+  }
+
+  if(touchRead(Live) > 50 ) // touch button pushed. 
+  {
+    m0de = 4; // live (heart beat)
+  }
 
 // consider putting this in a milis timed thing of fadeTime
 
-switch(m0de)
+switch(m0de)    // switch the mode for the LEDs
   {
     case 0: // turn LEDs off
       {
@@ -67,10 +94,10 @@ switch(m0de)
 
     case 1: // normal HDD activieyt flashing
       {
-        brightness = 255
+        brightness = 255;
         if( digitalRead(HDD) )
           {
-            strip.Color(colorR, colorG, BcolorB);   // turn LEDS full on
+            strip.Color(colorR, colorG, colorB);   // turn LEDS full on
           }
             else
             {
@@ -80,7 +107,8 @@ switch(m0de)
 
     case 2:   // full on couloru
     {
-      // code
+       brightness = 255;
+       strip.Color(colorR, colorG, colorB);   // turn LEDS full on
     } break;
 
 
@@ -96,7 +124,7 @@ switch(m0de)
         } 
           else 
           {
-            brightness = brightness -1   // fade down
+            brightness = brightness -1;   // fade down
           }
           
     } break;
@@ -108,8 +136,7 @@ switch(m0de)
   }
 
 
-
-
+}
 
 
 
@@ -118,37 +145,36 @@ switch(m0de)
 
 // old code 
 
-  if (HDD == HIGH)
-  {
-    brightness + 10;
-  }
-
-  if (currentMillis - previousMillisFade >= fadeTime)
-  {
-    previousMillisFade = currentMillis;
-
-    switch (m0de)
-    {
-    case:
-      0
-      {
-        // thing
-
-        if (brightness > brightness_old)
-        {
-          brightness--;
-        }
-
-        if (brightness > brightness_old)
-        {
-          brightness++;
-        }
-
-        colorWipe(strip.Color(colorR, colorG, BcolorB), 1);
-      }
-      break;
-    }
-
-    strip.setBrightness(brightness);
-  }
-}
+//  if (HDD == HIGH)
+//  {
+//    brightness + 10;
+//  }
+//
+//  if (currentMillis - previousMillisFade >= fadeTime)
+//  {
+//    previousMillisFade = currentMillis;
+//
+//    switch (m0de)
+//    {
+//    case:
+//      0
+//      {
+//        // thing
+//
+//        if (brightness > brightness_old)
+//        {
+//          brightness--;
+//        }
+//
+//        if (brightness > brightness_old)
+//        {
+//          brightness++;
+//        }
+//
+//        colorWipe(strip.Color(colorR, colorG, BcolorB), 1);
+//      }
+//      break;
+//    }
+//
+//    strip.setBrightness(brightness);
+//  }
