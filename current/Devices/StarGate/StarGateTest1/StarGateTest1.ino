@@ -1,15 +1,22 @@
 #include <Adafruit_NeoPixel.h>
+#include <AutoHome.h>
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
 
-#define LED_PIN    6
-#define LED_COUNT 63
+#define GATE_LED_PIN    0
+#define STAIRS_LED_PIN  5
+
+#define GATE_LED_COUNT 63
+#define STAIRS_LED_PIN  12 // plus actual sairs
 
 int i = 0;
 
-Adafruit_NeoPixel pixels(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel Gpixels(GATE_LED_COUNT, GATE_LED_PIN, NEO_GRB + NEO_KHZ800);    // initilize Gate strip
+Adafruit_NeoPixel Gstrip(GATE_LED_COUNT, GATE_LED_PIN, NEO_GRB + NEO_KHZ800);
+
+Adafruit_NeoPixel Spixels(STAIRS_LED_PIN, STAIRS_LED_PIN, NEO_GRB + NEO_KHZ800);  // initilize Stair strip
+Adafruit_NeoPixel Sstrip(STAIRS_LED_PIN, STAIRS_LED_PIN, NEO_GRB + NEO_KHZ800);
 
 
 int Brightness = 50;
@@ -18,17 +25,79 @@ int ChveronsLocks[] = {3, 10, 17, 24, 31, 38, 45, 52, 59 }; // chevron middle bi
 int ChveronsSides[] = {3,5, 10,12, 17,19, 24,26, 31,33, 38,40, 45,47, 52,54, 59,61 };  // chevron side bits // dont realy need
 int Symbols[] = {0,1, 5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62 };  // symoblosl
 
+int Stairs[] = {13 ... 36}; // the stairs
+int Sides[] = {1,2, 4,3};   // the sides, in light order
+int StairLights[] = {5,6,7,8};  // side ligitng on stairs
+
+AutoHome autohome;
+
+void mqtt_callback(char *topic, byte *payload, unsigned int length)
+{
+  Serial.print("Message arrived [");
+  if (!autohome.mqtt_callback(topic, payload, length))
+  {
+    String packet = "";
+    for (int i = 0; i < length; i++)
+    {
+      packet = packet + (char)payload[i];
+    }
+    Serial.print(packet);
+
+    Serial.println("]");
+    
+//        if (autohome.getValue(packet, ':', 0).equals("buzz"))
+//   {
+//      BuzzTime = current_time + autohome.getValue(packet, ':', 1).toInt();
+//      autohome.sendPacket(String(BuzzTime).c_str());
+//      Buzz = true;
+//    }
+    
+    
+    // if (autohome.getValue(packet, ':', 0).equals("time_counter"))
+    //  {
+    //    time_counter = autohome.getValue(packet, ',', 1).toInt();
+    //    mqtt_send_stats();
+    //  }
+
+    // if (autohome.getValue(packet, ':', 0).equals("SET"))
+    //  {
+    //   WW = autohome.getValue(packet, ',', 1).toInt();
+    //   CW = autohome.getValue(packet, ',', 2).toInt();
+    //   AM = autohome.getValue(packet, ',', 3).toInt();
+
+    //    mqtt_send_stats();
+    //    changeColourRequested = true;
+    //  }
+  }
+}
+
+
+void mqtt_send_stats()
+{
+  String packet = "example text : "
+                  "brightness = " +
+                  String(BRIGHTNESS) + ", "
+                                       "SATURATION = " +
+                  String(SATURATION) + ", "
+                                       "RAINBOW_SCALE = " +
+                  String(RAINBOW_SCALE) + ", "
+                                          "switch stat = " +
+                  (digitalRead(ON_OFF_SWITCH_PIN)) + ", "
+                  + "Mode = " + String(Mode) + "";
+  autohome.sendPacket(packet.c_str());
+}
 
 void setup() {
-  // put your setup code here, to run once:
-#if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
-  clock_prescale_set(clock_div_1);
-#endif
-  // END of Trinket-specific code.
 
-  strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();            // Turn OFF all pixels ASAP
+
+  Gstrip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  Gstrip.show();            // Turn OFF all pixels ASAP
+  Sstrip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  Sstrip.show();            // Turn OFF all pixels ASAP
   strip.setBrightness(Brightness); // Set BRIGHTNESS to about 1/5 (max = 255)
+
+  autohome.setPacketHandler(mqtt_callback);
+  autohome.begin();
 
   Serial.begin(115200);
 }
