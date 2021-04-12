@@ -13,10 +13,9 @@
 int i = 0;
 
 Adafruit_NeoPixel Gpixels(GATE_LED_COUNT, GATE_LED_PIN, NEO_GRB + NEO_KHZ800);    // initilize Gate strip
-Adafruit_NeoPixel Gstrip(GATE_LED_COUNT, GATE_LED_PIN, NEO_GRB + NEO_KHZ800);
 
-Adafruit_NeoPixel Spixels(STAIRS_LED_PIN, STAIRS_LED_PIN, NEO_GRB + NEO_KHZ800);  // initilize Stair strip
-Adafruit_NeoPixel Sstrip(STAIRS_LED_PIN, STAIRS_LED_PIN, NEO_GRB + NEO_KHZ800);
+// Adafruit_NeoPixel Spixels(STAIRS_LED_PIN, STAIRS_LED_PIN, NEO_GRB + NEO_KHZ800);  // initilize Stair strip
+
 
 
 int Brightness = 50;
@@ -92,9 +91,6 @@ void setup() {
 
   Gstrip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   Gstrip.show();            // Turn OFF all pixels ASAP
-  Sstrip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  Sstrip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(Brightness); // Set BRIGHTNESS to about 1/5 (max = 255)
 
   autohome.setPacketHandler(mqtt_callback);
   autohome.begin();
