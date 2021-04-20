@@ -18,7 +18,7 @@
 
 #define NumberOfPixels 55
 
-int m0de = 1;
+int m0de = 2;
 int fadeTime = 25;
 int brightness = 200;
 int brightness_old = 200;
@@ -27,9 +27,66 @@ int colorR = 255;
 int colorG = 255;
 int colorB = 255;
 
-Adafruit_NeoPixel strip(NumberOfPixels, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(NumberOfPixels, PIN, NEO_GRB + NEO_KHZ400);
 
-// AutoHome autohome;
+ AutoHome autohome;
+
+
+
+/* This function will be called every time a packet is received from the mqtt topic. */
+/* This is registered in the setup() */
+void mqtt_callback(char *topic, byte *payload, unsigned int length)
+{
+  Serial.print("Message arrived [");
+  if (!autohome.mqtt_callback(topic, payload, length))
+  {
+    String packet = "";
+    for (int i = 0; i < length; i++)
+    {
+      packet = packet + (char)payload[i];
+    }
+    Serial.print(packet);
+
+    Serial.println("]");
+if (autohome.getValue(packet, ':', 0).equals("brightness"))
+    {
+      brightness = autohome.getValue(packet, ':', 1).toInt();
+    //  FastLED.setBrightness(BRIGHTNESS);
+      strip.setBrightness(brightness);
+      mqtt_send_stats();
+    }
+
+    if (autohome.getValue(packet, ':', 0).equals("mode"))
+    {
+      m0de = autohome.getValue(packet, ':', 1).toInt();
+      mqtt_send_stats();
+    }
+
+
+    if (autohome.getValue(packet, ':', 0).equals("stat"))
+    {
+      mqtt_send_stats();
+    }
+  }
+}
+
+void mqtt_send_stats()
+{
+  String packet = "living room lights: "
+                  "m0de = " + String("m0de") + ", " + 
+                  "brightness = " + String("brightness") + ", "
+                    ;
+  autohome.sendPacket(packet.c_str());
+  Serial.println(packet);
+}
+
+void colorWipe(uint32_t color, int wait) {
+  for(int i=0; i< NumberOfPixels; i++) { // For each pixel in strip...
+    strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+    strip.show();                          //  Update strip to match
+    delay(1);                           //  Pause for a moment
+  }
+}
 
 void setup()
 {
@@ -38,58 +95,59 @@ void setup()
   strip.begin(); // Initialize neo pixel strip.
   strip.show();  // Initialize all pixels to 'off'
 
-  pinMode(HDD, INPUT); // to read hdd pin
-  pinMode(pwLed, INPUT);
+  pinMode(HDD, INPUT_PULLUP); // to read hdd pin
+  pinMode(pwLed, INPUT_PULLUP);
   pinMode(pwSw, OUTPUT); // SET defult stat to not turn off the server ? 
 
   /* This registers the function that gets called when a packet is recieved. */
-//   autohome.setPacketHandler(mqtt_callback);    // do i need ? 
+   autohome.setPacketHandler(mqtt_callback);    // do i need ? 
 
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
-//    autohome.begin();
+    autohome.begin();
 }
+
 
 void loop()
 {
-  strip.show();  // show updated pixels
-  //  autohome.loop();  // check for MQTT messages
+
+    autohome.loop();  // check for MQTT messages
 
   // delay(1);  // service things like wifi
 
 //    touchValue = touchRead(touchPin); // reach touch buttons, returns analog value
-  if(touchRead(ooff) > 50 ) // touch button pushed. 
-  {
-    m0de = 0; // OFF
-  }
-
-  if(touchRead(act) > 50 ) // touch button pushed. 
-  {
-    m0de = 1; // activity
-  }
-
-  if(touchRead(FULL) > 50 ) // touch button pushed. 
-  {
-    m0de = 2; // full on
-  }
-
-  if(touchRead(Fade) > 50 ) // touch button pushed. 
-  {
-    m0de = 3; // fade
-  }
-
-  if(touchRead(Live) > 50 ) // touch button pushed. 
-  {
-    m0de = 4; // live (heart beat)
-  }
-
-// consider putting this in a milis timed thing of fadeTime
+//  if(touchRead(ooff) > 50 ) // touch button pushed. 
+//  {
+//    m0de = 0; // OFF
+//  }
+//
+// if(touchRead(act) > 50 ) // touch button pushed. 
+//  {
+//    m0de = 1; // activity
+//  }
+//
+//  if(touchRead(FULL) > 50 ) // touch button pushed. 
+//  {
+//    m0de = 2; // full on
+//  }
+//
+//  if(touchRead(Fade) > 50 ) // touch button pushed. 
+//  {
+//    m0de = 3; // fade
+//  }
+//
+//  if(touchRead(Live) > 50 ) // touch button pushed. 
+//  {
+//    m0de = 4; // live (heart beat)
+//  }
 
 switch(m0de)    // switch the mode for the LEDs
   {
     case 0: // turn LEDs off
       {
-        brightness = brightness - 1;
+      //  brightness = brightness - 1;
+      brightness = 0;
           strip.setBrightness(brightness);
+            strip.show();  // show updated pixels
       } break;
 
     case 1: // normal HDD activieyt flashing
@@ -98,17 +156,22 @@ switch(m0de)    // switch the mode for the LEDs
         if( digitalRead(HDD) )
           {
             strip.Color(colorR, colorG, colorB);   // turn LEDS full on
+              strip.show();  // show updated pixels
           }
             else
             {
               strip.Color(0,0,0);                   // turn LEDS full off
+               strip.show();  // show updated pixels
+              
             }
       } break;
 
     case 2:   // full on couloru
     {
        brightness = 255;
-       strip.Color(colorR, colorG, colorB);   // turn LEDS full on
+      // strip.Color(colorR, colorG, colorB);   // turn LEDS full on
+      colorWipe(strip.Color(  0, 255,   0), 0); // Green
+        strip.show();  // show updated pixels
     } break;
 
 
