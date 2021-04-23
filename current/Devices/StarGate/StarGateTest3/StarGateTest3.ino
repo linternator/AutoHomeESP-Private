@@ -17,8 +17,8 @@ int ChveronsLocks[] = {3, 10, 17, 24, 31, 38, 45, 52, 59 }; // chevron middle bi
 int ChveronsSides[] = {3,5, 10,12, 17,19, 24,26, 31,33, 38,40, 45,47, 52,54, 59,61 };  // chevron side bits // dont realy need
 int Symbols[] = {0,1, 5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62 };  // symoblosl
 
-int Back[] = {37 ... 47}; // the back
-int Stairs[] = {13 ... 36}; // the stairs
+int Back[] = {37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47}; // the back
+int Stairs[] = {13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36}; // the stairs
 int Sides[] = {1,2, 4,3};   // the sides, in light order
 int StairLights[] = {5,6,7,8};  // side ligitng on stairs
 
@@ -42,7 +42,7 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
     
     if (autohome.getValue(packet, ':', 0).equals("mode"))
    {
-      m0de = current_time + autohome.getValue(packet, ':', 1).toInt();
+//      m0de = current_time + autohome.getValue(packet, ':', 1).toInt();
     }
 
   }
