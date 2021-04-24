@@ -1,11 +1,13 @@
 #include <FastLED.h>
-#include <AutoHome.h>
 
-#define GATE_LED_PIN    0
-#define STAIRS_LED_PIN  5
+#define GATE_LED_PIN 0
+#define STAIRS_LED_PIN 5
 
 #define GATE_LED_COUNT 63
-#define STAIRS_LED_COUNT  47 // plus actual sairs
+#define STAIRS_LED_COUNT 51 // plus actual sairs
+
+#define LED_TYPE WS2812
+#define COLOR_ORDER GRB
 
 CRGB Gate_strip[GATE_LED_COUNT];
 CRGB Stair_strip[STAIRS_LED_COUNT];
@@ -13,196 +15,261 @@ CRGB Stair_strip[STAIRS_LED_COUNT];
 int i = 0;
 int m0de = 1;
 
-int ChveronsLocks[] = {3, 10, 17, 24, 31, 38, 45, 52, 59 }; // chevron middle bits
-int ChveronsSides[] = {3,5, 10,12, 17,19, 24,26, 31,33, 38,40, 45,47, 52,54, 59,61 };  // chevron side bits // dont realy need
-int Symbols[] = {0,1, 5,6,7,8, 12,13,14,15, 19,20,21,22, 26,27,28,29, 33,34,35,36, 40,41,42,43, 47,48,49,50, 54,55,56,57, 61,62 };  // symoblosl
+int ChveronsLocks[] = {3, 10, 17, 24, 31,
+                       38, 45, 52, 59}; // chevron middle bits
+int ChveronsSides[] = {
+    2, 4, 9, 11, 16, 18, 23, 25, 30,
+    32, 37, 39, 44, 46, 51, 53, 58, 60}; // chevron side bits // dont realy need
+int Symbols[] = {0, 1, 5, 6, 7, 8, 12, 13, 14, 15, 19, 20,
+                 21, 22, 26, 27, 28, 29, 33, 34, 35, 36, 40, 41,
+                 42, 43, 47, 48, 49, 50, 54, 55, 56, 57, 61, 62}; // symoblosl
 
-int Back[] = {37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47}; // the back
-int Stairs[] = {13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36}; // the stairs
-int Sides[] = {1,2, 4,3};   // the sides, in light order
-int StairLights[] = {5,6,7,8};  // side ligitng on stairs
+int Back[] = {41, 42, 43, 44, 45, 46, 47, 48, 49, 50}; // the back
 
-AutoHome autohome;
+int Stairs[] = {         // The stairs
+    12, 13,              // Step 1 (top step)
+    14, 15, 16,          // Step 2
+    17, 18, 19,          // Step 3
+    20, 21, 22,          // Step 4
+    23, 24, 25, 26,      // Step 5
+    27, 28, 29, 30,      // Step 6
+    31, 32, 33, 34, 35,  // Step 7
+    40, 39, 38, 37, 36}; // Step 8 (bottom step)
 
+int Sides[] = {7, 8, 6, 9, 5, 10, 4, 11}; // the sides, in light order
+int StairLights[] = {0, 1, 2, 3};         // side ligitng on stairs
 
-
-void mqtt_callback(char *topic, byte *payload, unsigned int length)
+struct BackAnimationState
 {
-  Serial.print("Message arrived [");
-  if (!autohome.mqtt_callback(topic, payload, length))
-  {
-    String packet = "";
-    for (int i = 0; i < length; i++)
-    {
-      packet = packet + (char)payload[i];
-    }
-    Serial.print(packet);
+  int update_interval = 50;
+  int last_update_time = 0;
+  int index = 0;
+};
+BackAnimationState backState;
 
-    Serial.println("]");
-    
-    if (autohome.getValue(packet, ':', 0).equals("mode"))
-   {
-//      m0de = current_time + autohome.getValue(packet, ':', 1).toInt();
-    }
-
-  }
-}
-
-
-//void mqtt_send_stats()
-//{
-//  String packet = "example text : "
-//                  "brightness = " +
-//                  String(BRIGHTNESS) + ", "
-//                                       "SATURATION = " +
-//                  String(SATURATION) + ", "
-//                                       "RAINBOW_SCALE = " +
-//                  String(RAINBOW_SCALE) + ", "
-//                                          "switch stat = " +
-//                  (digitalRead(ON_OFF_SWITCH_PIN)) + ", "
-//                  + "Mode = " + String(Mode) + "";
-//  autohome.sendPacket(packet.c_str());
-//}
-
-
-void SetColor(struct CRGB *leds,int NUM_LEDS, const struct CHSV &color)
+struct SideAnimationState
 {
-  for (int i = 0; i < NUM_LEDS; i++)
-  {
-    leds[i] = color;
-  }
-}
+  int update_interval = 500;
+  int last_update_time = 0;
+  int index = 0;
+};
+SideAnimationState sideState;
 
+struct StairsAnimationState
+{
+  int update_interval = 100;
+  int last_update_time = 0;
+  int counter = 0;
+};
+StairsAnimationState stairsState;
 
-void setup() {
+struct StairLightsAnimationState
+{
+  int reset_interval = 350;
+  int next_update_time_normal = 0;
+  int next_update_time_flicker = 0;
+  int random_flash = 600;
+};
+StairLightsAnimationState stairLightsState;
 
-  FastLED.addLeds<LED_TYPE, GATE_LED_PIN, COLOR_ORDER>(Gate_strip, GATE_LED_COUNT).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<LED_TYPE, STAIRS_LED_PIN, COLOR_ORDER>(Stair_strip, STAIRS_LED_COUNT).setCorrection(TypicalLEDStrip);
+struct SymbolsAnimationState
+{
+  int last_update_time = 0;
+  int update_interval = 50;
+  int index = 0;
+};
+SymbolsAnimationState symbolsState;
 
-  autohome.setPacketHandler(mqtt_callback);
-  autohome.begin();
+void setup()
+{
+  delay(500);
+  FastLED
+      .addLeds<LED_TYPE, GATE_LED_PIN, COLOR_ORDER>(Gate_strip, GATE_LED_COUNT)
+      .setCorrection(TypicalLEDStrip);
+  FastLED
+      .addLeds<LED_TYPE, STAIRS_LED_PIN, COLOR_ORDER>(Stair_strip,
+                                                      STAIRS_LED_COUNT)
+      .setCorrection(TypicalLEDStrip);
 
+  FastLED.clear();
+  delay(200);
   Serial.begin(115200);
+
+  // Ensures the next update will be from this time
+  backState.last_update_time = millis();
+  sideState.last_update_time = millis();
+  stairsState.last_update_time = millis();
 }
 
-void loop() {
-
-switch(m0de)
+void loop()
 {
-  case 0:   // off all
-    {
-      SetColor(Stair_strip,STAIRS_LED_COUNT, CHSV(0, 0, 0));;
-    }
+  unsigned long time = millis();
+  UpdateBack(time);
+  UpdateSides(time);
+  UpdateStairs(time);
+  UpdateStairLights(time);
+  UpdateSymbols(time);
+
+  Gate_strip[ChveronsLocks[4]] = CRGB(255, 255, 255);
+
+  // CRGB color = CRGB(0, 0, 255);
+  //StepThroughArray(Stair_strip, StairLights, 4, color);
+  FastLED.show();
+  delay(16);
 
 
-  case 1:
-    {
-      if(i == 36)
-        {i = 0;}
-          else
-          {
-           pixels.clear();
-    
-        
-          // light pixel I 
-           pixels.setPixelColor(Symbols[i], pixels.Color(255,255,255));
-          // turn off pixel I - 1.
-          pixels.setPixelColor( (Symbols[i-1]) , pixels.Color(0,0,0));
-        
-        
-    
-      if(i < 9)
-          {
-          // light pixel I 
-           pixels.setPixelColor(ChveronsLocks[i], pixels.Color(255,255,255));
-          // turn off pixel I - 1.
-          pixels.setPixelColor( (ChveronsLocks[i-1]) , pixels.Color(0,0,0));
-          }
-    
-       if(i < 28)
-          {
-          // light pixel I 
-           pixels.setPixelColor((ChveronsLocks[(i/3)] -1 ), pixels.Color(255,255,255));
-           pixels.setPixelColor((ChveronsLocks[(i/3)] +1 ), pixels.Color(255,255,255));
-          // turn off pixel I - 1.
-      //     pixels.setPixelColor((ChveronsLocks[(i/3)] -2 ), pixels.Color(0,0,0));
-      //     pixels.setPixelColor((ChveronsLocks[(i/3)] -4 ), pixels.Color(0,0,0));
-          }
-    
-        i++;
-          delay(500);
-          pixels.show();
-          Serial.println(i);
-          }
-    }
 }
 
-// other code from main.
-FastLED.show();
-autohome.loop();
-}
-
-
-void DialAdress(int A, int B, int C, int D, int E, int F, int G,    int H,    int I)    // consider passing in an array.
+void StepThroughArray(CRGB *leds, int *array, int array_size, CRGB &color)
 {
-  char system = M;  // M = milky way, 7. G = galaxy = 8. D = Destiny = 9.
-  
-//  if(I != 0)
-//  {
-//    // all 9 chevrons used.   // destiny
-//    system = D;
-//  }
-//    else
-//      {
-//        if( H != 0)         // sort out if statments. 
-//          {
-//            system = G;
-//          }
-//        else 
-//          {
-//            system = M;
-//          }
-//      }
-
-int i = 1;
-int Dir = 1;
-int Target =1;
-
-array Adress[A,B,C,D,E,F,G,H,I];
-
-
-if(Adress[i] != 0)    // if theres no more symbols entered.
-{
-
-// turn on shevron sides A
-pixels.setPixelColor((ChveronsLocks[( Adress[i] )] -1 ), pixels.Color(255,255,255));
-pixels.setPixelColor((ChveronsLocks[( Adress[i] )] +1 ), pixels.Color(255,255,255));
-
-if( Dir == 1) // swich direction after each syboml is found and locked in. 
+  FastLED.clear();
+  if (i == array_size)
   {
-    for(int X; X == A; X++)    // find symbol // convert to non blocking.   // clockwise.
-      {
-          pixels.setPixelColor(Symbols[X-1], pixels.Color(0,0,0));  // turn of last symbol
-          pixels.setPixelColor(Symbols[X], pixels.Color(0,0,255));  // turn on symbol
-      }
-    Dir = 0
+    i = 0;
   }
-    else
-      {
-        for(int X = 36; X == A; X--)    // find symbol // convert to non blocking.  // anti cockwise. 
-          {
-              pixels.setPixelColor(Symbols[X-1], pixels.Color(0,0,0));  // turn of last symbol
-              pixels.setPixelColor(Symbols[X], pixels.Color(0,0,255));  // turn on symbol
-          }
-    Dir = 1;
-      }
+  Serial.println(i);
+  leds[array[i]] = color;
 
-pixels.setPixelColor(ChveronsLocks[ Adress[i] ], pixels.Color(255,255,255));  // activeate shevron
-
-pixels.setPixelColor((ChveronsLocks[( Adress[i] )] -1 ), pixels.Color(0,0,0));    // turn of side shevrons. 
-pixels.setPixelColor((ChveronsLocks[( Adress[i] )] +1 ), pixels.Color(0,0,0));
-
-i++;    // next adress
+  i++;
 }
-  
+
+void UpdateBack(unsigned long Time)
+{
+  if (Time > backState.last_update_time + backState.update_interval)
+  {
+    backState.last_update_time = Time;
+
+    // Turn off previus pixel
+    Stair_strip[Back[backState.index]] = CRGB(0, 0, 0);
+
+    // Moves to the next pixel
+    backState.index++;
+
+    // So we don't run over the end of the array
+    if (backState.index == 10)
+    {
+      backState.index = 0;
+    }
+
+    // Light the next pixel
+    Stair_strip[Back[backState.index]] = CRGB(255, 255, 255);
+  }
+}
+
+void UpdateSides(unsigned long Time)
+{
+  if (Time > sideState.last_update_time + sideState.update_interval && sideState.index < 8)
+  {
+    sideState.last_update_time = Time;
+
+    Stair_strip[Sides[sideState.index]] = CRGB(0, 255, 0);
+    Stair_strip[Sides[sideState.index + 1]] = CRGB(0, 255, 0);
+
+    sideState.index = sideState.index + 2;
+  }
+}
+
+void UpdateStairs(unsigned long Time)
+{
+  if (Time > stairsState.last_update_time + stairsState.update_interval && stairsState.counter < 8)
+  {
+    stairsState.last_update_time = Time;
+
+    int numberOfStairsToTurnOn = 0;
+    switch (stairsState.counter)
+    {
+    case 0:
+      numberOfStairsToTurnOn = 5;
+      break;
+    case 1:
+      numberOfStairsToTurnOn = 10;
+      break;
+    case 2:
+      numberOfStairsToTurnOn = 14;
+      break;
+    case 3:
+      numberOfStairsToTurnOn = 18;
+      break;
+    case 4:
+      numberOfStairsToTurnOn = 21;
+      break;
+    case 5:
+      numberOfStairsToTurnOn = 24;
+      break;
+    case 6:
+      numberOfStairsToTurnOn = 27;
+      break;
+    case 7:
+      numberOfStairsToTurnOn = 29;
+      break;
+    default:
+      break;
+    }
+    for (int index = 28; index > 28 - numberOfStairsToTurnOn; index--)
+    {
+      Stair_strip[Stairs[index]] = CRGB(0, 0, 255);
+    }
+    stairsState.counter++;
+  }
+}
+
+void UpdateStairLights(unsigned long Time)
+{
+
+  if (Time > stairLightsState.next_update_time_flicker)
+  {
+    stairLightsState.next_update_time_flicker = Time + random(1000, 5000);
+
+    // picks left/right
+    int led1, led2 = 0;
+    if (random(0, 2))
+    {
+      led1 = 0;
+      led2 = 1;
+    }
+    else
+    {
+      led1 = 2;
+      led2 = 3;
+    }
+
+    // Picks up/down
+    if (random(0, 2))
+    {
+      Stair_strip[StairLights[led1]] = CRGB(255, 255, 255);
+      Stair_strip[StairLights[led2]] = CRGB(255, 255, 255);
+    }
+    else
+    {
+      Stair_strip[StairLights[led1]] = CRGB(80, 80, 80);
+      Stair_strip[StairLights[led2]] = CRGB(80, 80, 80);
+    }
+  }
+
+  if (Time > stairLightsState.next_update_time_normal)
+  {
+    stairLightsState.next_update_time_normal = Time + stairLightsState.reset_interval;
+    for (int index = 0; index < 4; index++)
+    {
+      Stair_strip[StairLights[index]] = CRGB(128, 128, 0);
+    }
+  }
+}
+
+void UpdateSymbols(unsigned long Time)
+{
+  if (Time > symbolsState.last_update_time + symbolsState.update_interval)
+  {
+    symbolsState.last_update_time = Time;
+
+    Gate_strip[Symbols[symbolsState.index]] = CRGB(0, 0, 0);
+    symbolsState.index++;
+
+    if (symbolsState.index > 35)
+    {
+      symbolsState.index = 0;
+    }
+
+    Gate_strip[Symbols[symbolsState.index]] = CRGB(255, 128, 0);
+  }
 }
