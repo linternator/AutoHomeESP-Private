@@ -72,7 +72,7 @@ if (autohome.getValue(packet, ':', 0).equals("brightness"))
 
 void mqtt_send_stats()
 {
-  String packet = "living room lights: "
+  String packet = "Organa-lighitng: "
                   "m0de = " + String("m0de") + ", " + 
                   "brightness = " + String("brightness") + ", "
                     ;
@@ -144,9 +144,7 @@ switch(m0de)    // switch the mode for the LEDs
   {
     case 0: // turn LEDs off
       {
-      //  brightness = brightness - 1;
-      brightness = 0;
-          strip.setBrightness(brightness);
+            strip.Color(0, 0, 0);
             strip.show();  // show updated pixels
       } break;
 

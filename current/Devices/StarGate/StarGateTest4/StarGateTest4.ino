@@ -82,6 +82,14 @@ struct SymbolsAnimationState
 };
 SymbolsAnimationState symbolsState;
 
+struct DailAdressAnimationState
+{
+  int count = 7;    // 7, 8, 9 . adress 
+  int LR = 1;       // left or right spin
+  int i = 0;        // count of how many chevrons are locked.
+};
+DailAdressAnimationState DailAdressState;
+
 void setup()
 {
   delay(500);
@@ -274,4 +282,36 @@ void UpdateSymbols(unsigned long Time)
 
     Gate_strip[Symbols[symbolsState.index]] = CRGB(255, 128, 0);
   }
+}
+
+void DailAdress(int A, int B, int C, int D, int E, int F, int G, int H,  int I,)
+{  
+
+// if I > 36 
+    // if H > 36
+        // 7 adress
+    // 8 adress
+// 9 adress
+
+
+switch( DailAdressState.count )
+{
+  case 0:
+    {
+      // light chevron 1 sides.
+      // set i to 0 
+//     light sombly[i] // unlight previose smbole.
+        // if i = INT A, 
+          // chevron 1 on,
+          // chevron sides off.
+        //eles
+            // i++          
+    }
+
+// repeat case 0 for 9 times.
+    
+}
+
+DailAdressState.count
+
 }
