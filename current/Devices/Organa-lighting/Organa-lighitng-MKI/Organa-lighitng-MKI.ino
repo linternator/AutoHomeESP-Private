@@ -73,8 +73,8 @@ if (autohome.getValue(packet, ':', 0).equals("brightness"))
 void mqtt_send_stats()
 {
   String packet = "Organa-lighitng: "
-                  "m0de = " + String("m0de") + ", " + 
-                  "brightness = " + String("brightness") + ", "
+                  "m0de = " + String(m0de) + ", " + 
+                  "brightness = " + String(brightness) + ", "
                     ;
   autohome.sendPacket(packet.c_str());
   Serial.println(packet);
@@ -112,7 +112,7 @@ void loop()
 
     autohome.loop();  // check for MQTT messages
 
-  // delay(1);  // service things like wifi
+   delay(16);  // service things like wifi
 
 //    touchValue = touchRead(touchPin); // reach touch buttons, returns analog value
 //  if(touchRead(ooff) > 50 ) // touch button pushed. 
@@ -144,8 +144,10 @@ switch(m0de)    // switch the mode for the LEDs
   {
     case 0: // turn LEDs off
       {
-            strip.Color(0, 0, 0);
-            strip.show();  // show updated pixels
+          colorWipe(strip.Color(  0, 0,   0), 0);
+          //  strip.Color(0, 0, 0);
+          //  strip.clear();
+          //  strip.show();  // show updated pixels
       } break;
 
     case 1: // normal HDD activieyt flashing
@@ -169,7 +171,7 @@ switch(m0de)    // switch the mode for the LEDs
        brightness = 255;
       // strip.Color(colorR, colorG, colorB);   // turn LEDS full on
       colorWipe(strip.Color(  0, 255,   0), 0); // Green
-        strip.show();  // show updated pixels
+      //  strip.show();  // show updated pixels
     } break;
 
 
@@ -193,6 +195,8 @@ switch(m0de)    // switch the mode for the LEDs
     case 4: // live // heart beat
     {
       // code
+      strip.clear();
+      strip.show();
     } break;
   }
 
