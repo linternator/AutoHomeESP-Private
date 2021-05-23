@@ -74,7 +74,7 @@ void setup()
       .addLeds<LED_TYPE, STAIRS_LED_PIN, COLOR_ORDER>(Stair_strip,
                                                       STAIRS_LED_COUNT)
       .setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(50);
+  FastLED.setBrightness(200);
   FastLED.clear();
   delay(200);
   Serial.begin(115200);
@@ -92,8 +92,9 @@ void loop()
   UpdateSides(time);
   UpdateStairs(time);
   UpdateStairLights(time);
-  DialUpAnimationUpdate(time);
-
+ // DialUpAnimationUpdate(time);
+ //Serial.println("i works");
+  DialInAnimation(50);
   //Gate_strip[ChveronsLocks[4]] = CRGB(255, 255, 255);
   // CRGB color = CRGB(0, 0, 255);
   //StepThroughArray(Stair_strip, StairLights, 4, color);

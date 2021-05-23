@@ -26,5 +26,6 @@ extern int Sides[];
 extern int StairLights[];
 
 void DialUpAnimationUpdate(unsigned long Time);
+void DialInAnimation(unsigned long Time);
 
 #endif
