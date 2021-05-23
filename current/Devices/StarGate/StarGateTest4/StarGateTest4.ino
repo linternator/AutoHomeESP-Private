@@ -1,14 +1,4 @@
-// #include <AutoHome.h>
-#include <FastLED.h>
-
-#define GATE_LED_PIN 0
-#define STAIRS_LED_PIN 5
-
-#define GATE_LED_COUNT 63
-#define STAIRS_LED_COUNT 51 // plus actual sairs
-
-#define LED_TYPE WS2812
-#define COLOR_ORDER GRB
+#include "StarGateTest4.h"
 
 CRGB Gate_strip[GATE_LED_COUNT];
 CRGB Stair_strip[STAIRS_LED_COUNT];
@@ -74,29 +64,6 @@ struct StairLightsAnimationState
 };
 StairLightsAnimationState stairLightsState;
 
-struct SymbolsAnimationState
-{
-  unsigned long last_update_time = 0;
-  int update_interval = 50;
-  int index = 0;
-};
-SymbolsAnimationState symbolsState;
-
-struct DialAdressAnimationState
-{
-  // Overall state
-  int currentChveron = 0; // 7, 8, 9 . adress
-  int address[9] = {24, 3, 10, 17, 31, 21, 27, 6, 33};
-  int addressCount = 9;
-
-  // Search algorithm (Animation)
-  int currentSearchSymbol = 0;
-  int currentDialAnimationPart = 0;
-  bool currentChveronLocked = false;
-  unsigned long dialAnimationPartTime = 0;
-};
-DialAdressAnimationState dialAdressState;
-
 void setup()
 {
   delay(500);
@@ -107,7 +74,7 @@ void setup()
       .addLeds<LED_TYPE, STAIRS_LED_PIN, COLOR_ORDER>(Stair_strip,
                                                       STAIRS_LED_COUNT)
       .setCorrection(TypicalLEDStrip);
-
+  FastLED.setBrightness(50);
   FastLED.clear();
   delay(200);
   Serial.begin(115200);
@@ -125,10 +92,9 @@ void loop()
   UpdateSides(time);
   UpdateStairs(time);
   UpdateStairLights(time);
-  UpdateSymbols(time);
+  DialUpAnimationUpdate(time);
 
   //Gate_strip[ChveronsLocks[4]] = CRGB(255, 255, 255);
-
   // CRGB color = CRGB(0, 0, 255);
   //StepThroughArray(Stair_strip, StairLights, 4, color);
   FastLED.show();
@@ -268,198 +234,5 @@ void UpdateStairLights(unsigned long Time)
     {
       Stair_strip[StairLights[index]] = CRGB(128, 128, 0);
     }
-  }
-}
-
-void UpdateSymbols(unsigned long Time)
-{
-  // if (Time > symbolsState.last_update_time + symbolsState.update_interval)
-  // {
-  //   symbolsState.last_update_time = Time;
-
-  //   Gate_strip[Symbols[symbolsState.index]] = CRGB(0, 0, 0);
-  //   symbolsState.index++;
-
-  //   if (symbolsState.index > 35)
-  //   {
-  //     symbolsState.index = 0;
-  //   }
-
-  //   Gate_strip[Symbols[symbolsState.index]] = CRGB(255, 128, 0);
-  // }
-
-  if (dialAdressState.currentChveronLocked)
-  {
-    dialAdressState.currentChveron++;
-    dialAdressState.currentChveronLocked = false;
-  }
-
-  // Checks if we all dialed up
-  if (dialAdressState.currentChveron == dialAdressState.addressCount)
-  {
-
-    if (Time > dialAdressState.dialAnimationPartTime + 5000)
-    {
-      //Resets the gate and starts a new dial up
-      dialAdressState.currentChveron = 0;
-      dialAdressState.addressCount = random(7, 10);
-      for (int index = 0; index < dialAdressState.addressCount; index++)
-      {
-        dialAdressState.address[index] = random(0, 36);
-      }
-
-      for (int index = 0; index < 36; index++)
-      {
-        Gate_strip[Symbols[index]] = CRGB(0, 0, 0);
-      }
-
-      for (int index = 0; index < 18; index++)
-      {
-        Gate_strip[ChveronsSides[index]] = CRGB(0, 0, 0);
-      }
-
-      for (int index = 0; index < 9; index++)
-      {
-        Gate_strip[ChveronsLocks[index]] = CRGB(0, 0, 0);
-      }
-    }
-    else
-    {
-      return;
-    }
-  }
-
-  int start_symbol = 18;
-  if (dialAdressState.currentChveron > 0)
-  {
-    start_symbol = dialAdressState.address[dialAdressState.currentChveron - 1];
-  }
-
-  DialAdress(
-      start_symbol,
-      dialAdressState.currentChveron % 2 == 0,
-      dialAdressState.address[dialAdressState.currentChveron],
-      dialAdressState.currentChveron,
-      Time);
-
-  // Ensures the previous locked symbols stay turned on
-  for (int index = 0; index < dialAdressState.currentChveron; index++)
-  {
-    if (dialAdressState.currentSearchSymbol != dialAdressState.address[index])
-    {
-      Gate_strip[Symbols[dialAdressState.address[index]]] = CRGB(0, 0, 255);
-    }
-  }
-}
-
-void DialAdress(int start_symbol, bool left, int symbol, int chveron, unsigned long Time)
-{
-
-  switch (dialAdressState.currentDialAnimationPart)
-  {
-  case 0:
-    dialAdressState.dialAnimationPartTime = Time;
-    dialAdressState.currentDialAnimationPart = 1;
-    break;
-
-  // 1. Light sides of chveron sides
-  case 1:
-    Gate_strip[ChveronsSides[chveron * 2]] = CRGB(255, 255, 255);
-    Gate_strip[ChveronsSides[chveron * 2 + 1]] = CRGB(255, 255, 255);
-    if (Time > dialAdressState.dialAnimationPartTime + 500)
-    {
-      dialAdressState.currentDialAnimationPart = 2;
-      dialAdressState.dialAnimationPartTime = Time;
-    }
-    break;
-
-  // 2. Light the first symbol
-  case 2:
-    Gate_strip[Symbols[start_symbol]] = CRGB(255, 255, 255);
-    if (Time > dialAdressState.dialAnimationPartTime + 250)
-    {
-      dialAdressState.currentDialAnimationPart = 3;
-      dialAdressState.dialAnimationPartTime = Time;
-      dialAdressState.currentSearchSymbol = start_symbol;
-    }
-    break;
-
-  // 3. Is the symbol we are on, the correct symbol?
-  //  3a: It is not the correct symbol, we go to the symbol to the left and repeat 3
-  //  We do this by turning off current symbol and turn on the left symbol
-  case 3:
-    if (dialAdressState.currentSearchSymbol == symbol)
-    {
-      // We have found the correct symbol
-      dialAdressState.currentDialAnimationPart = 4;
-      dialAdressState.dialAnimationPartTime = Time;
-    }
-    else if (Time > dialAdressState.dialAnimationPartTime + 100)
-    {
-      //Goes to the next symbol
-      dialAdressState.dialAnimationPartTime = Time;
-      Gate_strip[Symbols[dialAdressState.currentSearchSymbol]] = CRGB(0, 0, 0);
-      if (left)
-      {
-        dialAdressState.currentSearchSymbol = dialAdressState.currentSearchSymbol + 1;
-      }
-      else
-      {
-        dialAdressState.currentSearchSymbol = dialAdressState.currentSearchSymbol - 1;
-      }
-      // Goes to the first symbol
-      if (dialAdressState.currentSearchSymbol >= 36)
-      {
-        dialAdressState.currentSearchSymbol = 0;
-      }
-      // Goes to the last symbol
-      if (dialAdressState.currentSearchSymbol < 0)
-      {
-        dialAdressState.currentSearchSymbol = 35;
-      }
-      Gate_strip[Symbols[dialAdressState.currentSearchSymbol]] = CRGB(255, 255, 255);
-    }
-    break;
-
-    // 4. When it reaches the correct one we lights the chveron
-  case 4:
-    if (Time > dialAdressState.dialAnimationPartTime + 250)
-    {
-      Gate_strip[ChveronsLocks[chveron]] = CRGB(255, 255, 255);
-      dialAdressState.currentDialAnimationPart = 5;
-      dialAdressState.dialAnimationPartTime = Time;
-    }
-    break;
-
-    // 5. We turn off the chveron sides
-  case 5:
-    if (Time > dialAdressState.dialAnimationPartTime + 500)
-    {
-      Gate_strip[ChveronsSides[chveron * 2]] = CRGB(0, 0, 0);
-      Gate_strip[ChveronsSides[chveron * 2 + 1]] = CRGB(0, 0, 0);
-      dialAdressState.currentDialAnimationPart = 6;
-      dialAdressState.dialAnimationPartTime = Time;
-    }
-    break;
-
-    // 6. Change the color of the symbol (to show it have been chosen)
-  case 6:
-    Gate_strip[Symbols[symbol]] = CRGB(0, 0, 255);
-    dialAdressState.currentDialAnimationPart = 7;
-    dialAdressState.dialAnimationPartTime = Time;
-    break;
-
-    // 7. Add a delay
-  case 7:
-    if (Time > dialAdressState.dialAnimationPartTime + 1500)
-    {
-      dialAdressState.currentDialAnimationPart = 0;
-      dialAdressState.dialAnimationPartTime = Time;
-      dialAdressState.currentChveronLocked = true;
-    }
-    break;
-
-  default:
-    break;
   }
 }
