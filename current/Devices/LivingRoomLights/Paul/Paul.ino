@@ -401,6 +401,5 @@ void heatblobs(struct CRGB *leds1, struct CRGB *leds2, struct CRGB *leds3, struc
         //leds4[i%NUM_LEDS] = CRGB(red, green, blue);
       } break;
     }
-
   }
 }
