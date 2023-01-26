@@ -63,6 +63,7 @@ void setup() {
 
 void loop() {
 
+  delay(deBounce);
   /* This needs to be called in the loop as it handels the reconection to the mqtt server if it disconnects*/
   autohome.loop();
 
@@ -177,9 +178,6 @@ void loop() {
                   delay(deBounce);
                 }
     }
-
-   
-    
 }
 
 
