@@ -1,37 +1,38 @@
-#include <dummy.h>
-
 /* This example is a simple setup example to show you how to setup the AutoHome library. */
-/* If you run this example with the variables filled out the esp will print out any */
-/* received packets from the mqtt broker */
 
 #include <AutoHome.h>
 
-/* These variables need to be filled out with the information for your wifi details */
-/* and the mqtt broker */
-char const* wifi_ssid = "RG-Wifi";
-char const* wifi_password = "STBCrg123";
-char const* mqtt_broker_ip = "192.168.1.10";
-char const* mqtt_user = "autohome";
-char const* mqtt_password = "autoHOME";
-char const* host_name = "DoorBell";
-char const* mqtt_topic = "/home/door";
-
 AutoHome autohome;
+
+/* This function will be called every time a packet is received from the mqtt topic. */
+/* This is registered in the setup() */
+void mqtt_callback(char* topic, byte* payload, unsigned int length){
+  Serial.print("Message arrived [");
+  if(!autohome.mqtt_callback(topic, payload, length)){
+
+      String packet = "";
+
+      for (int i = 0; i < length; i++) {
+        packet = packet + (char)payload[i];
+      }
+
+      Serial.print(packet);
+
+  }
+
+}
+
 
 void setup() {
   // put your setup code here, to run once:
-  digitalWrite(0,HIGH);
 
   Serial.begin(115200);
 
+  /* This registers the function that gets called when a packet is recieved. */
+  autohome.setPacketHandler(mqtt_callback);
+
   /* This starts the library and connects the esp to the wifi and the mqtt broker */
-  autohome.begin(wifi_ssid, wifi_password, mqtt_broker_ip, mqtt_user, mqtt_password, host_name, mqtt_topic);
-
-  autohome.sendPacket("Doorbell:Button:0");
-
-  digitalWrite(0,LOW);
-
-  ESP.deepSleep(500);
+  autohome.begin();
 
 }
 

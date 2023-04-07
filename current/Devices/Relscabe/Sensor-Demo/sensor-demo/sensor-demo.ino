@@ -46,7 +46,7 @@ unsigned long lastTime = 0;
 void setup() //This code is executed once
 {
   //Initialize I2C communication
-  Wire.begin(5, 4);
+  Wire.begin(4, 5);
 
   //Initialization of the BNO055
   BNO_Init(&myBNO); //Assigning the structure to hold information about the device
@@ -54,7 +54,7 @@ void setup() //This code is executed once
   //Configuration to NDoF mode
   bno055_set_operation_mode(OPERATION_MODE_NDOF);
 
-  delay(1);
+  delay(10);
 
   //Initialize the Serial Port to view information on the Serial Monitor
   Serial.begin(115200);

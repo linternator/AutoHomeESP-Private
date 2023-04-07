@@ -16,6 +16,37 @@ struct bno055_euler myEulerData; //Structure to hold the Euler data
 #define OLED_SDA 5
 #define OLED_SCL 4
 SSD1306Wire display(OLED_ADDR, OLED_SDA, OLED_SCL);
+#include <Wire.h>
+ 
+//void setup() {
+//  Wire.begin(5,4);
+//  Serial.begin(115200);
+//  Serial.println("\nI2C Scanner");
+//}
+ 
+//void loop() {
+//  byte error, address;
+//  int nDevices;
+//  Serial.println("Scanning...");
+//  nDevices = 0;
+//  for(address = 1; address < 127; address++ ) {
+//    Wire.beginTransmission(address);
+//    error = Wire.endTransmission();
+//    if (error == 0) {
+//      Serial.print("I2C device found at address 0x");
+//      if (address<16) {
+//        Serial.print("0");
+//      }
+//      Serial.println(address,HEX);
+//      nDevices++;
+//    }
+//    else if (error==4) {
+//      Serial.print("Unknow error at address 0x");
+//      if (address<16) {
+//        Serial.print("0");
+//      }
+//      Serial.println(address,HEX);
+//    }    
 
 unsigned long lastTime = 0;
 unsigned long lastTime_serial = 0;
@@ -65,6 +96,7 @@ void setup() //This code is executed once
     Serial.begin(115200);
     setup_screen();
     setup_bno055();
+    
 }
 
 void update_screen()
@@ -125,5 +157,31 @@ void loop()
     {
         lastTime_serial = millis();
         write_sensor_to_serial();
+
+
+//  byte error, address;
+//  int nDevices;
+//  Serial.println("Scanning...");
+//  nDevices = 0;
+//  for(address = 1; address < 127; address++ ) {
+//    Wire.beginTransmission(address);
+//    error = Wire.endTransmission();
+//    if (error == 0) {
+//      Serial.print("I2C device found at address 0x");
+//      if (address<16) {
+//        Serial.print("0");
+//      }
+//      Serial.println(address,HEX);
+//      nDevices++;
+//    }
+//    else if (error==4) {
+//      Serial.print("Unknow error at address 0x");
+//      if (address<16) {
+//        Serial.print("0");
+//      }
+//      Serial.println(address,HEX);
+
+
+        
     }
 }

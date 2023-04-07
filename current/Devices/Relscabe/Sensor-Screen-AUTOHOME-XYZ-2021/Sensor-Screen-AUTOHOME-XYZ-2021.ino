@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include "SSD1306Wire.h"
 #include "BNO055_support.h"
+// #include "BNO055.h"
 
 AutoHome autohome;
 
@@ -16,7 +17,7 @@ struct bno055_euler myEulerData; //Structure to hold the Euler data
 #define OLED_SCL 4
 SSD1306Wire display(OLED_ADDR, OLED_SDA, OLED_SCL);
 
-#define Button 0
+
 
 
 unsigned long lastTime = 0;
@@ -109,6 +110,7 @@ void update_screen()
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_10);
  //   display.drawString(5, 0, "mqtt: " + String( me33age ));
+  display.drawString(5, 0, "TimeStamp: " + String(lastTime));
   display.drawString(5, 15, "Heading(Yaw): " + String(heading));
   display.drawString(5, 30, "Roll: " + String(roll));
   display.drawString(5, 45, "Pitch: " + String(pitch));
@@ -160,6 +162,7 @@ void loop() {
 
   /* This needs to be called in the loop as it handels the reconection to the mqtt server if it disconnects*/
   autohome.loop();
+
   if ((millis() - lastTime) >= 16)
   {
     lastTime = millis();
@@ -180,6 +183,7 @@ void loop() {
 
     float rawPitch = float(myEulerData.p) / 16.00;
     int pitch = round(rawPitch);  
+
 
     
 
@@ -227,21 +231,25 @@ void loop() {
 
 //if( digitalRead(button) == LOW)
 //  {
-    // set current XYZ to base.
-
-    // set flag
+//    // set current XYZ to base.
+//
+//    // set flag
 //  }
 //else
 //{
-  // if current XYZ diffrent to base, 
-    // find biggest diffrence, X Y or Z
-    // publish diffrence.
+//  // if current XYZ diffrent to base, 
+//    // find biggest diffrence, X Y or Z
+//    // publish diffrence.
 //}
 
 
 ////////////////////
 
-
+// switch heading
+  // 0 - 20 
+    // select A
+  // 20 - 40
+    // select B 
 
 
 
@@ -249,24 +257,23 @@ void loop() {
     if (mqttPitch != Zold && isWithinValidRange)    // twist
     {
       String packet = "Z:IS:" + String(mqttPitch);
-      autohome.sendPacket( packet.c_str() );
+    //  autohome.sendPacket( packet.c_str() );
     }
 
-        if (mqttRole != Yold)
+    if (mqttRole != Yold)
     {
       String packet = "Y:IS:" + String(mqttRole);
-      autohome.sendPacket( packet.c_str() );
+    //  autohome.sendPacket( packet.c_str() );
     }
 
-        if (mqttHeading != Xold)
+    if (mqttHeading != Xold)
     {
       String packet = "X:IS:" + String(mqttHeading);
-      autohome.sendPacket( packet.c_str() );
+      //autohome.sendPacket( packet.c_str() );
     }
 
     Zold = mqttPitch;
     Yold = mqttRole;
     Xold = mqttHeading;
   }
-
 }
