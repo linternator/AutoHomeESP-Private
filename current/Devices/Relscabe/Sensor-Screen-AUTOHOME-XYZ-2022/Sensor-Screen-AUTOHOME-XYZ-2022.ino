@@ -27,10 +27,18 @@ int Xold;
 int Yold;
 int Zold;
 
-    bool isWithinValidRange = false;
-    int mqttPitch   = -1;
-    int mqttRole    = -1;
-    int mqttHeading = -1;
+int pitch_old;
+int role_old;
+int heading_old;
+
+int modey;
+bool testy = 1;
+
+
+bool isWithinValidRange = false;
+int mqttPitch   = -1;
+int mqttRole    = -1;
+int mqttHeading = -1;
 
 String me33age = "";  // mqtt mesages inbound
 
@@ -60,7 +68,7 @@ void setup_bno055()
 
   Serial.println("Sensor have been initialized");
 
-//  pinMode(button,INTPUT); // DEFINE button as input.
+  //  pinMode(button,INTPUT); // DEFINE button as input.
 }
 
 void setup_screen()
@@ -109,7 +117,7 @@ void update_screen()
   // Draws on the display
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_10);
- //   display.drawString(5, 0, "mqtt: " + String( me33age ));
+  //   display.drawString(5, 0, "mqtt: " + String( me33age ));
   display.drawString(5, 0, "TimeStamp: " + String(lastTime));
   display.drawString(5, 15, "Heading(Yaw): " + String(heading));
   display.drawString(5, 30, "Roll: " + String(roll));
@@ -173,8 +181,8 @@ void loop() {
   if ((millis() - lastTime_serial) >= 25)
   {
     lastTime_serial = millis();
- //   write_sensor_to_serial();
- 
+    //   write_sensor_to_serial();
+
     float rawHeading = float(myEulerData.h) / 16.00;
     int heading = round(rawHeading);  // 3
 
@@ -182,110 +190,178 @@ void loop() {
     int role = round(rawRole);  // 3
 
     float rawPitch = float(myEulerData.p) / 16.00;
-    int pitch = round(rawPitch);  
+    int pitch = round(rawPitch);
 
 
-    // if button held, look for relotive change in values. 
-    if(digitalRead(0) == LOW)
+    // if button held, look for relotive change in values.
+    if (digitalRead(0) == LOW)
+    {
+
+     if( testy == true)
       {
-          // role - Zold
-          // find diffrence between role and Zold. 
-          // output that diffrence.
-
-          // look for change in diffrence.
-
-          // maybe look for biggest change in X Y or Z ? and only transmit that one. 
+         delay(300);   // debounce the button physicaly ? as in the muscles tensing in my paw.
       }
-        else
+      //   Serial.println("button down.");
+      int pitch_change = pitch - pitch_old;
+      int role_change = role - role_old;
+      int heading_change = heading - heading_old;
+
+
+      if ( testy == true )      // might need to bias this to favore role more as pitch and heading are changed as well :/ 
+      {
+        if ( pitch_change > 10 || pitch_change < -10)
+        {
+          modey = 1;                            // only listen to changes in a direction. 
+          testy = false;                        // dont test again untill button relased
+          Serial.println(" pitch change");
+        }
+        else if ( role_change  > 10 || role_change  < -10)
+        {
+          modey = 2;
+          testy = false;
+          Serial.println(" role change");
+        } else if ( heading_change > 10 || heading_change < -10 )
+        {
+          Serial.println(" heading change");
+          modey = 3;
+          testy = false;
+        }
+      }
+
+
+
+      switch (modey)
+      {
+        case 1:
           {
-            set role to Zold. 
-            // diffrence = 0;
-          }
+            Serial.print("pitch = ");
+            Serial.println(pitch_change);
+          //  testy = false;
+              // send auto home packet
+                if (mqttPitch != Zold && isWithinValidRange)    // twist
+                {
+                  String packet = "Z:IS:" + String(mqttPitch);
+                  //  autohome.sendPacket( packet.c_str() );
+                }
+          } break;
+
+        case 2:
+          {
+            Serial.print("role = ");
+            Serial.println(role_change);
+          //  testy = false;
+              if (mqttRole != Yold)
+                  {
+                    String packet = "Y:IS:" + String(mqttRole);
+                    //  autohome.sendPacket( packet.c_str() );
+                  }
+          } break;
+
+        case 3:
+          {
+            Serial.print("heading = ");
+            Serial.println(heading_change);
+          //  testy = false;
+              if (mqttHeading != Xold)
+                {
+                  String packet = "X:IS:" + String(mqttHeading);
+                  //autohome.sendPacket( packet.c_str() );
+                }
+          } break;
+
+      }
+
+      
 
 
-    
-//    if (pitch < 90 && pitch > 45) // between 90 and 45 // twisty
-//      {
-//        mqttPitch = 0;
-//        isWithinValidRange = true;
-//      }
-//        else if (pitch > 90)
-//        {
-//          mqttPitch = pitch - 90;
-//          mqttPitch = map(mqttPitch, 0, 180, 0, 255);
-//          isWithinValidRange = true;
-//        }
-//          else if (pitch < -90)
-//          {
-//            mqttPitch = pitch + 270;
-//            mqttPitch = map(mqttPitch, 90, 180, 128, 255);
-//            isWithinValidRange = true;
-//          }
-//            else if (pitch > -90 && pitch < -45)
-//            {
-//              mqttPitch = 255;
-//              isWithinValidRange = true;
-//            }
-//
-////     mqttRole    = role;       // betweeen 0 and 42 // up / dow
-//  if (role > -50 && role < 0)
-//        {
-//          mqttRole = role* -1;
-//
-//            mqttRole = map(mqttRole, -50, 0, 0, 255);
-//        }
-//
-////     mqttHeading = heading;   // between 20 and 102 // left / right
-//  if (heading > 20 && heading < 105)
-//        {
-//          //mqttHeading = -1;
-//
-//            mqttHeading = map(heading, 42, 105, 0, 255);
-//        }
 
 
-//if( digitalRead(button) == LOW)
-//  {
-//    // set current XYZ to base.
-//
-//    // set flag
-//  }
-//else
-//{
-//  // if current XYZ diffrent to base, 
-//    // find biggest diffrence, X Y or Z
-//    // publish diffrence.
-//}
+
+      //          // role - Zold
+      //          // find diffrence between role and Zold.
+      //          // output that diffrence.
+      //
+      //          // look for change in diffrence.
+      //
+      //          // maybe look for biggest change in X Y or Z ? and only transmit that one.
+    }
+
+    else
+    {
+      pitch_old = pitch;         // set current XYZ to old. as refrence location for change.
+      role_old = role;
+      heading_old = heading;
+      testy = true;
+      modey = 0;
+    }
 
 
-////////////////////
 
-// switch heading
-  // 0 - 20 
+
+    //    if (pitch < 90 && pitch > 45) // between 90 and 45 // twisty
+    //      {
+    //        mqttPitch = 0;
+    //        isWithinValidRange = true;
+    //      }
+    //        else if (pitch > 90)
+    //        {
+    //          mqttPitch = pitch - 90;
+    //          mqttPitch = map(mqttPitch, 0, 180, 0, 255);
+    //          isWithinValidRange = true;
+    //        }
+    //          else if (pitch < -90)
+    //          {
+    //            mqttPitch = pitch + 270;
+    //            mqttPitch = map(mqttPitch, 90, 180, 128, 255);
+    //            isWithinValidRange = true;
+    //          }
+    //            else if (pitch > -90 && pitch < -45)
+    //            {
+    //              mqttPitch = 255;
+    //              isWithinValidRange = true;
+    //            }
+    //
+    ////     mqttRole    = role;       // betweeen 0 and 42 // up / dow
+    //  if (role > -50 && role < 0)
+    //        {
+    //          mqttRole = role* -1;
+    //
+    //            mqttRole = map(mqttRole, -50, 0, 0, 255);
+    //        }
+    //
+    ////     mqttHeading = heading;   // between 20 and 102 // left / right
+    //  if (heading > 20 && heading < 105)
+    //        {
+    //          //mqttHeading = -1;
+    //
+    //            mqttHeading = map(heading, 42, 105, 0, 255);
+    //        }
+
+
+    //if( digitalRead(button) == LOW)
+    //  {
+    //    // set current XYZ to base.
+    //
+    //    // set flag
+    //  }
+    //else
+    //{
+    //  // if current XYZ diffrent to base,
+    //    // find biggest diffrence, X Y or Z
+    //    // publish diffrence.
+    //}
+
+
+    ////////////////////
+
+    // switch heading
+    // 0 - 20
     // select A
-  // 20 - 40
-    // select B 
+    // 20 - 40
+    // select B
 
 
 
-    // send auto home packet
-    if (mqttPitch != Zold && isWithinValidRange)    // twist
-    {
-      String packet = "Z:IS:" + String(mqttPitch);
-    //  autohome.sendPacket( packet.c_str() );
-    }
-
-    if (mqttRole != Yold)
-    {
-      String packet = "Y:IS:" + String(mqttRole);
-    //  autohome.sendPacket( packet.c_str() );
-    }
-
-    if (mqttHeading != Xold)
-    {
-      String packet = "X:IS:" + String(mqttHeading);
-      //autohome.sendPacket( packet.c_str() );
-    }
 
     Zold = mqttPitch;
     Yold = mqttRole;
