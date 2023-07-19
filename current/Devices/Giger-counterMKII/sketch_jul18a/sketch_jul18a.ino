@@ -15,8 +15,8 @@ int PULSE_PIN = 4;
 int BEEPER = 14;
 
 bool beeper_var = false;
-
 bool countYES = true;  // send MQTT beep.
+bool blep = false;
 
 unsigned long previousMillis = 0;  // will store last time the count was messured.
 const long interval = 60000;       // interval of messuring the count (each minute) each 60 seconds
@@ -36,72 +36,80 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     }
 
     Serial.print(packet);
-    
-  if (autohome.getValue(packet, ':', 0).equals("beeper=1")) // beep IRL on 
-  {
-    digitalWrite(BEEPER, HIGH);
-    mqtt_send_stats();
+
+    if (autohome.getValue(packet, ':', 0).equals("beeper=1")) // beep IRL on
+    {
+      digitalWrite(BEEPER, HIGH);
+      mqtt_send_stats();
+    }
+
+    if (autohome.getValue(packet, ':', 0).equals("beeper=0")) // beep IRL off
+    {
+      digitalWrite(BEEPER, LOW);
+      mqtt_send_stats();
+    }
+
+
+    if (autohome.getValue(packet, ':', 0).equals("pulseMQTT=0"))  // send MQTT beep off
+    {
+      countYES = false;
+      mqtt_send_stats();
+    }
+
+    if (autohome.getValue(packet, ':', 0).equals("pulseMQTT=1"))  // send MQTT beep on
+    {
+      countYES = true;
+      mqtt_send_stats();
+    }
+
+    if (autohome.getValue(packet, ':', 0).equals("status"))  // send status
+    {
+      mqtt_send_stats();
+    }
+
   }
-
-  if (autohome.getValue(packet, ':', 0).equals("beeper=0")) // beep IRL off
-  {
-    digitalWrite(BEEPER, LOW);
-    mqtt_send_stats();
-  }
-
-
-  if (autohome.getValue(packet, ':', 0).equals("pulseMQTT=0"))  // send MQTT beep off
-  {
-    countYES = false;
-    mqtt_send_stats();
-  }
-
-  if (autohome.getValue(packet, ':', 0).equals("pulseMQTT=1"))  // send MQTT beep on
-  {
-    countYES = true;
-    mqtt_send_stats();
-  }
-
-  if (autohome.getValue(packet, ':', 0).equals("status"))  // send status
-  {
-    mqtt_send_stats();
-  }
-
-  }  
 }
 
 
 void mqtt_send_stats()
 {
-  String packet = 
-                  "beeper : " + String(digitalRead(BEEPER)) +
-                  " mqtt_beep : " + String(beeper_var) +
-                  " uSievert / H : " + String(uSievert) +
-                  " count per min : " + String(count)                  
-                 ;
+  String packet =
+    "beeper : " + String(digitalRead(BEEPER)) +
+    " mqtt_beep : " + String(beeper_var) +
+    " uSievert / H : " + String(uSievert) +
+    " count per min : " + String(count)
+    ;
   autohome.sendPacket(packet.c_str());
+}
+
+ICACHE_RAM_ATTR void Interupty()
+{
+  blep = true;
+ // while ( digitalRead(PULSE_PIN) == LOW)
+ // {
+ //   delay(1);
+ // }
 }
 
 void setup() {
 
   pinMode(PULSE_PIN, INPUT);
   pinMode(BEEPER, OUTPUT);
-//  digitalWrite(BEEPER, HIGH);
+  digitalWrite(BEEPER, HIGH); // for debuging
+  attachInterrupt(digitalPinToInterrupt(PULSE_PIN), Interupty, FALLING);  // attach intrupt so giger counter dose not crash if radiation too high.
 
   autohome.setPacketHandler(mqtt_callback);
 
   autohome.begin();
 
   Serial.begin(115200);
+
 }
 
 void loop() {
 
-  // if recive MQTT message
-
-
   autohome.loop();
-  delay(1);
+  //delay(1);
 
   unsigned long currentMillis = millis();
 
@@ -119,18 +127,16 @@ void loop() {
   }
 
 
-  if (digitalRead(PULSE_PIN) == LOW) {  // if giger counter ticks
+  if ( blep == true) {  // if giger counter ticks
     count++;
 
     if (countYES == true) {
       // send MQTT message.
       uSievert = (count * 0.0057);
-        String packet = "Tick"                 ;
-  autohome.sendPacket(packet.c_str());
+      String packet = "Tick";
+      autohome.sendPacket(packet.c_str());
     }
 
-    while (digitalRead(PULSE_PIN) == LOW) {
-      // wait
-    }
+    blep = false;
   }
 }
