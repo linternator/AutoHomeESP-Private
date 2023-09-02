@@ -1,4 +1,4 @@
-/* This example is a simple setup example to show you how to setup the AutoHome library. */
+// ESP MUST BE INSTALLED as "help" is active hight, so blocks when hosting the captive web portal.
 
 #include <AutoHome.h>
 
@@ -13,7 +13,7 @@
 #define stop 35
 #define help 34
 
-int deBounce = 242;
+int deBounce = 100;
 
 
 AutoHome autohome;

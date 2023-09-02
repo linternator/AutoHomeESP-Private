@@ -109,7 +109,7 @@ void setup() {
 void loop() {
 
   autohome.loop();
-  //delay(1);
+  //delay(5);
 
   unsigned long currentMillis = millis();
 
