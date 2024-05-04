@@ -1,5 +1,12 @@
 #include <AutoHome.h>
 
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
+
+#define PIN 2
+
 AutoHome autohome;
 
 #include <Wire.h>
@@ -17,8 +24,7 @@ Adafruit_MPR121 TouchControllerD = Adafruit_MPR121();
 
 #define intruptPin 35
 
-#define LED 2
-
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(3, PIN, NEO_GRB + NEO_KHZ800);
 
 unsigned long myTime;
 
@@ -35,6 +41,34 @@ uint16_t currtouchedC = 0;
 
 uint16_t lasttouchedD = 0;
 uint16_t currtouchedD = 0;
+
+///////// LED stuff things
+int led1_mode = 0;
+int led2_mode = 0;
+int led3_mode = 0;
+
+void SetColour(int led,int r,int g, int b)
+{
+  strip.setPixelColor(led, r, g, b);
+  strip.show();
+}
+
+// String getValue(String data, char separator, int index)
+// {
+//   int found = 0;
+//   int strIndex[] = {0, -1};
+//   int maxIndex = data.length() - 1;
+
+//   for (int i = 0; i <= maxIndex && found <= index; i++) {
+//     if (data.charAt(i) == separator || i == maxIndex) {
+//       found++;
+//       strIndex[0] = strIndex[1] + 1;
+//       strIndex[1] = (i == maxIndex) ? i + 1 : i;
+//     }
+//   }
+
+//   return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+// }
 
 
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
@@ -53,31 +87,52 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     // LED1:1 // turn on LED 1.
     // LED2:0 // turn off LED 2.
 
-    if (autohome.getValue(packet, ':', 1).equals("LED1")) {
+    // led : mode : brightness ? 
+    // main loop animate leds.
+
+// String str = "led:1:R:G:B";
+// sh mqtt-publish.sh /touchy-pad-2 2,0,0,200
+
+
+
+    SetColour( autohome.getValue(packet, ',' , 0).toInt(), autohome.getValue(packet, ',' , 1).toInt(), autohome.getValue(packet, ',' , 2).toInt(), autohome.getValue(packet, ',' , 3).toInt() );
+
+
+    if (autohome.getValue(packet, ':', 0).equals("LED")) {
       // do the thing
-      int state1 = autohome.getValue(packet, ':', 2).toInt();
-      digitalWrite(LED1, state1);
-      Serial.println(state1);
+      
     }
 
     if (autohome.getValue(packet, ':', 1).equals("LED2")) {
       // do the thing
+      colorWipe(strip.Color(0, 255, 0), 1); // Green
       int state2 = autohome.getValue(packet, ':', 2).toInt();
-      digitalWrite(LED2, state2);
-      Serial.println(state2);
     }
 
     if (autohome.getValue(packet, ':', 1).equals("LED3")) {
       // do the thing
+      colorWipe(strip.Color(0, 0, 255), 1); // Blue
       int state3 = autohome.getValue(packet, ':', 2).toInt();
-      digitalWrite(LED3, state3);
-      Serial.println(state3);
+    }
+
+    if (autohome.getValue(packet, ':', 1).equals("LED4")) {
+      // do the thing
+      colorWipe(strip.Color(0, 0, 0), 1); // off
+      int state3 = autohome.getValue(packet, ':', 2).toInt();
     }
 
   }
 
 }
 
+// Fill the dots one after the other with a color
+void colorWipe(uint32_t c, uint8_t wait) {
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
+  }
+}
 
 void SendMQTTStatus(uint16_t currtouched, uint16_t lasttouched, String chipName)
 {
@@ -108,15 +163,15 @@ void setup() {
 
   while (!Serial) { // needed to keep leonardo/micro from starting too fast!
     delay(10);
-
-    pinMode(LED1, OUTPUT);
-    pinMode(LED2, OUTPUT);
-    pinMode(LED3, OUTPUT);
   }
+
+   strip.begin();
+  strip.setBrightness(50);
+  strip.show(); // Initialize all pixels to 'off'
 
   autohome.setPacketHandler(mqtt_callback);
 
-
+colorWipe(strip.Color(0, 255, 0), 1); // Green
 
   pinMode(intruptPin, INPUT_PULLUP);
 
@@ -162,6 +217,8 @@ void setup() {
 
   autohome.begin();
 
+colorWipe(strip.Color(255, 100, 0), 1); // een
+
 }
 
 void loop() {
@@ -186,7 +243,7 @@ void loop() {
     currtouchedD = TouchControllerD.touched();
     SendMQTTStatus(currtouchedD, lasttouchedD, "D");
     lasttouchedD = currtouchedD;
-
+ 
     // comment out this line for detailed data from the sensor!
     return;
 

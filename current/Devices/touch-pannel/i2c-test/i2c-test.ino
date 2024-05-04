@@ -1,7 +1,7 @@
 #include <Wire.h>
 
-int sda = 14;
-int scl = 15;
+int sda = 22;// old 14;
+int scl = 21;// old 15;
 int INTERUPT = 35;
 
 int led1 = 18;
