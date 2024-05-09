@@ -40,6 +40,8 @@ uint16_t currtouchedC = 0;
 uint16_t lasttouchedD = 0;
 uint16_t currtouchedD = 0;
 
+String thing = "";
+
 ///////// LED stuff things
 
 struct LEDState {
@@ -51,9 +53,6 @@ struct LEDState {
   uint8_t B;         // blue value (0-255)
 };
 
-int Rplus = 0;
-int Gplus = 0;
-int Bplus = 0;
 const int number_of_leds = 3;
 
 LEDState leds[number_of_leds];
@@ -91,37 +90,13 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       leds[autohome.getValue(packet, ':', 1).toInt()].B = autohome.getValue(packet, ':', 5).toInt();
       leds[autohome.getValue(packet, ':', 1).toInt()].brightness = autohome.getValue(packet, ':', 6).toFloat();
       leds[autohome.getValue(packet, ':', 1).toInt()].speed = autohome.getValue(packet, ':', 7).toFloat();
-
-
-      // if (autohome.getValue(packet, ':', 0).equals("SOLID")) {  // SET an LED to a specific colour.
-      //   // set LED to solid,        e.g. SOLID:LED:R:G:B:brightness
-      //   //                                  0 : 1: 2:3:4
-
-      //   switch ( autohome.getValue(packet, ':', 1).toInt() )
-      //     {
-      //         case 1:
-      //           {
-      //             led1.mode = 1;  // mode is solid
-      //             led1.R = autohome.getValue(packet, ':', 2).toInt();
-      //             led1.G = autohome.getValue(packet, ':', 3).toInt();
-      //             led1.B = autohome.getValue(packet, ':', 4).toInt();
-      //           } break;
-      //     }
-      // SetColour(autohome.getValue(packet, ':', 1).toInt(), autohome.getValue(packet, ':', 2).toInt(), autohome.getValue(packet, ':', 3).toInt(), autohome.getValue(packet, ':', 4).toInt());
     }
   }
 }
-// // Fill the dots one after the other with a color
-// void colorWipe(uint32_t c, uint8_t wait) {
-//   for (uint16_t i = 0; i < strip.numPixels(); i++) {
-//     strip.setPixelColor(i, c);
-//     strip.show();
-//     delay(wait);
-//   }
-// }
 
 void SendMQTTStatus(uint16_t currtouched, uint16_t lasttouched, String chipName) {
   // Get the currently touched pads
+
 
   for (uint8_t i = 0; i < 12; i++) {
     // it if *is* touched and *wasnt* touched before, alert!
@@ -129,7 +104,257 @@ void SendMQTTStatus(uint16_t currtouched, uint16_t lasttouched, String chipName)
       Serial.print(i);
       Serial.println(" touched " + chipName);
 
-      String packet = chipName + ":" + String(i) + ":touched";
+      if (chipName == "A") {
+        switch (i) {
+          case 0:
+            {
+              thing = "C4";
+            }
+            break;
+
+          case 1:
+            {
+              thing = "C3";
+            }
+            break;
+
+          case 2:
+            {
+              thing = "C2";
+            }
+            break;
+
+          case 3:
+            {
+              thing = "C1";
+            }
+            break;
+
+          case 4:
+            {
+              thing = "D4";
+            }
+            break;
+
+          case 5:
+            {
+              thing = "D3";
+            }
+            break;
+
+          case 6:
+            {
+              thing = "D2";
+            }
+            break;
+
+          case 7:
+            {
+              thing = "D1";
+            }
+            break;
+
+          case 8:
+            {
+              thing = "E2";
+            }
+            break;
+
+          case 9:
+            {
+              thing = "E3";
+            }
+            break;
+
+          case 10:
+            {
+              thing = "E4";
+            }
+            break;
+
+          case 11:
+            {
+              thing = "E1";
+            }
+            break;
+        }
+      } else {
+        if (chipName == "B") {
+          switch (i) {
+            case 0:
+              {
+                thing = "A4";
+              }
+              break;
+
+            case 1:
+              {
+                thing = "A3";
+              }
+              break;
+
+            case 2:
+              {
+                thing = "A2";
+              }
+              break;
+
+            case 3:
+              {
+                thing = "A1";
+              }
+              break;
+
+            case 4:
+              {
+                thing = "B4";
+              }
+              break;
+
+            case 5:
+              {
+                thing = "B3";
+              }
+              break;
+
+            case 6:
+              {
+                thing = "B2";
+              }
+              break;
+
+            case 7:
+              {
+                thing = "B1";
+              }
+              break;
+
+            case 8:
+              {
+                thing = "C5";
+              }
+              break;
+
+            case 9:
+              {
+                thing = "A5";
+              }
+              break;
+
+            case 10:
+              {
+                thing = "C6";
+              }
+              break;
+
+            case 11:
+              {
+                thing = "A6";
+              }
+              break;
+          }
+        } else {
+          if (chipName == "C") {
+            switch (i) {
+              case 0:
+                {
+                  thing = "A7";
+                }
+                break;
+
+              case 1:
+                {
+                  thing = "C7";
+                }
+                break;
+
+              case 8:
+                {
+                  thing = "A8";
+                }
+                break;
+
+              case 9:
+                {
+                  thing = "B5";
+                }
+                break;
+
+              case 10:
+                {
+                  thing = "B6";
+                }
+                break;
+
+              case 11:
+                {
+                  thing = "A9";
+                }
+                break;
+            }
+          } else {
+            if (chipName == "D") {
+              switch (i) {
+                case 0:
+                  {
+                    thing = "D6";
+                  }
+                  break;
+
+                case 1:
+                  {
+                    thing = "E9";
+                  }
+                  break;
+
+                case 2:
+                  {
+                    thing = "E8";
+                  }
+                  break;
+
+                case 6:
+                  {
+                    thing = "D5";
+                  }
+                  break;
+
+                case 7:
+                  {
+                    thing = "C9";
+                  }
+                  break;
+
+                case 8:
+                  {
+                    thing = "C8";
+                  }
+                  break;
+
+                case 9:
+                  {
+                    thing = "E5";
+                  }
+                  break;
+
+                case 10:
+                  {
+                    thing = "E6";
+                  }
+                  break;
+
+                case 11:
+                  {
+                    thing = "E7";
+                  }
+                  break;
+              }
+            }
+          }
+        }
+      }
+
+      String packet = thing + ":touched";
       autohome.sendPacket(packet.c_str());
     }
     // if it *was* touched and now *isnt*, alert!
@@ -137,7 +362,257 @@ void SendMQTTStatus(uint16_t currtouched, uint16_t lasttouched, String chipName)
       Serial.print(i);
       Serial.println(" released " + chipName);
 
-      String packet = chipName + ":" + String(i) + ":released";
+
+      if (chipName == "A") {
+        switch (i) {
+          case 0:
+            {
+              thing = "C4";
+            }
+            break;
+
+          case 1:
+            {
+              thing = "C3";
+            }
+            break;
+
+          case 2:
+            {
+              thing = "C2";
+            }
+            break;
+
+          case 3:
+            {
+              thing = "C1";
+            }
+            break;
+
+          case 4:
+            {
+              thing = "D4";
+            }
+            break;
+
+          case 5:
+            {
+              thing = "D3";
+            }
+            break;
+
+          case 6:
+            {
+              thing = "D2";
+            }
+            break;
+
+          case 7:
+            {
+              thing = "D1";
+            }
+            break;
+
+          case 8:
+            {
+              thing = "E2";
+            }
+            break;
+
+          case 9:
+            {
+              thing = "E3";
+            }
+            break;
+
+          case 10:
+            {
+              thing = "E4";
+            }
+            break;
+
+          case 11:
+            {
+              thing = "E1";
+            }
+            break;
+        }
+      } else {
+        if (chipName == "B") {
+          switch (i) {
+            case 0:
+              {
+                thing = "A4";
+              }
+              break;
+
+            case 1:
+              {
+                thing = "A3";
+              }
+              break;
+
+            case 2:
+              {
+                thing = "A2";
+              }
+              break;
+
+            case 3:
+              {
+                thing = "A1";
+              }
+              break;
+
+            case 4:
+              {
+                thing = "B4";
+              }
+              break;
+
+            case 5:
+              {
+                thing = "B3";
+              }
+              break;
+
+            case 6:
+              {
+                thing = "B2";
+              }
+              break;
+
+            case 7:
+              {
+                thing = "B1";
+              }
+              break;
+
+            case 8:
+              {
+                thing = "C5";
+              }
+              break;
+
+            case 9:
+              {
+                thing = "A5";
+              }
+              break;
+
+            case 10:
+              {
+                thing = "C6";
+              }
+              break;
+
+            case 11:
+              {
+                thing = "A6";
+              }
+              break;
+          }
+        } else {
+          if (chipName == "C") {
+            switch (i) {
+              case 0:
+                {
+                  thing = "A7";
+                }
+                break;
+
+              case 1:
+                {
+                  thing = "C7";
+                }
+                break;
+
+              case 8:
+                {
+                  thing = "A8";
+                }
+                break;
+
+              case 9:
+                {
+                  thing = "B5";
+                }
+                break;
+
+              case 10:
+                {
+                  thing = "B6";
+                }
+                break;
+
+              case 11:
+                {
+                  thing = "A9";
+                }
+                break;
+            }
+          } else {
+            if (chipName == "D") {
+              switch (i) {
+                case 0:
+                  {
+                    thing = "D6";
+                  }
+                  break;
+
+                case 1:
+                  {
+                    thing = "E9";
+                  }
+                  break;
+
+                case 2:
+                  {
+                    thing = "E8";
+                  }
+                  break;
+
+                case 6:
+                  {
+                    thing = "D5";
+                  }
+                  break;
+
+                case 7:
+                  {
+                    thing = "C9";
+                  }
+                  break;
+
+                case 8:
+                  {
+                    thing = "C8";
+                  }
+                  break;
+
+                case 9:
+                  {
+                    thing = "E5";
+                  }
+                  break;
+
+                case 10:
+                  {
+                    thing = "E6";
+                  }
+                  break;
+
+                case 11:
+                  {
+                    thing = "E7";
+                  }
+                  break;
+              }
+            }
+          }
+        }
+      }
+      String packet = thing + ":released";
       autohome.sendPacket(packet.c_str());
     }
   }
@@ -255,14 +730,14 @@ void loop() {
                         (int)(leds[i].R * leds[i].brightness),
                         (int)(leds[i].G * leds[i].brightness),
                         (int)(leds[i].B * leds[i].brightness));
-            //  Serial.println((leds[i].R * leds[i].brightness));
+              //  Serial.println((leds[i].R * leds[i].brightness));
             } else  // ramping down
             {
               SetColour(i,
                         (int)(leds[i].R * (2 - leds[i].brightness)),
                         (int)(leds[i].G * (2 - leds[i].brightness)),
                         (int)(leds[i].B * (2 - leds[i].brightness)));
-            //  Serial.println((leds[i].R * (2 - leds[i].brightness)));
+              //  Serial.println((leds[i].R * (2 - leds[i].brightness)));
             }
           }
           break;
