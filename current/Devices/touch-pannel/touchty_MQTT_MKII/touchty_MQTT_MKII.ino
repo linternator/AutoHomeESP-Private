@@ -633,6 +633,10 @@ void setup() {
 
   autohome.setPacketHandler(mqtt_callback);
 
+  #define MPR121_TOUCH_THRESHOLD_DEFAULT 16  // overide the defualt 12. makes it less sensotive as colour silk screen is odd.
+  Serial.print(" touch sensotivity = ");
+  Serial.println( MPR121_TOUCH_THRESHOLD_DEFAULT ); // should be 16 ? was originaly 12.
+
   // colorWipe(strip.Color(0, 255, 0), 1);  // Green
 
   pinMode(intruptPin, INPUT_PULLUP);
